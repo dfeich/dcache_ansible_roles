@@ -74,13 +74,12 @@
     session_role: dcache
     
 # createdb -O dcache -U postgres billing
-- name: create dcache DB
+- name: create billing DB
   postgresql_db:
     name: billing
     owner: dcache
 
 - name: install our T3 dcache yum repo
-  tags: current
   yum_repository:
     baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
     # name is the section name of the repo
@@ -92,7 +91,6 @@
     exclude: dcache
 
 - name: install dcache package
-  tags: current
   yum:
     name: dcache
     state: present
@@ -100,7 +98,6 @@
 
 # only run this once. Place a file to remember.
 - name: Let dcache initialize its database
-  tags: current
   shell: "dcache database update && touch {{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
   args:
     creates: "{{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
