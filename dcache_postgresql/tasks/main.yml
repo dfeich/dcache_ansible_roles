@@ -38,4 +38,69 @@
     name: "{{ postgresql_service }}"
     state: started
     enabled: yes
+
+# createdb -U postgres chimera
+- name: create chimera DB
+  postgresql_db:
+    name: chimera
+
+# createuser -U postgres --no-superuser --no-createrole --createdb --pwprompt chimera 
+- name: create chimera DB user
+  postgresql_user:
+    name: chimera
+    password: "pw-chimera"
+    role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
+  become: true
+  # only postgres user is allowed to manage postgres DB with peer setup
+  # here, with local trust configured this is not strictly necessary
+  become_user: "{{ postgresql_user }}"
+  # do not write this to ansible log due to password
+  no_log: true
+
+# createuser -U postgres --no-superuser --no-createrole --createdb --pwprompt dcache
+- name: create dcache DB user
+  postgresql_user:
+    name: dcache
+    password: "pw-dcache"
+    role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
+  become: true
+  become_user: "{{ postgresql_user }}"
+  no_log: true
+  
+# createdb -U dcache dcache
+- name: create dcache DB
+  postgresql_db:
+    name: dcache
+    session_role: dcache
     
+# createdb -O dcache -U postgres billing
+- name: create dcache DB
+  postgresql_db:
+    name: billing
+    owner: dcache
+
+- name: install our T3 dcache yum repo
+  tags: current
+  yum_repository:
+    baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
+    # name is the section name of the repo
+    name: dcache
+    description: dCache repository (inst by ansible)
+    gpgcheck: no
+    enabled: yes
+    # to prevent inadvertent updates
+    exclude: dcache
+
+- name: install dcache package
+  tags: current
+  yum:
+    name: dcache
+    state: present
+    disable_excludes: all
+
+# only run this once. Place a file to remember.
+- name: Let dcache initialize its database
+  tags: current
+  shell: "dcache database update && touch {{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
+  args:
+    creates: "{{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
