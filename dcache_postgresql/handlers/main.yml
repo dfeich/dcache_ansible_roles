@@ -1,0 +1,7 @@
+---
+# handlers file for roles/dcache_postgresql
+- name: restart postgresql
+  service:
+    name: "{{ postgresql_service }}"
+    state: restarted
+    sleep: 5

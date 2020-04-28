@@ -1,0 +1,41 @@
+---
+# tasks file for roles/dcache_postgresql
+- name: Install postgresql packages
+  yum:
+    name: "{{ postgresql_packages }}"
+    state: present
+    
+- name: Initialize postgres DB
+  shell: "{{ postgresql_bin_path }}/postgresql-11-setup initdb"
+  args:
+    creates: /var/lib/pgsql/{{ postgres_version }}/data/PG_VERSION
+
+- name: Configure pg_hba.conf host based authz if entries configured
+  template:
+    src: "pg_hba.conf.j2"
+    dest: "{{ postgresql_config_path }}/pg_hba.conf"
+    owner: "{{ postgresql_user }}"
+    group: "{{ postgresql_group }}"
+    mode: 0600
+  notify: restart postgresql
+  when: postgresql_hba_entries | length > 0
+
+- name: Configure global settings in postgresql.conf
+  lineinfile:
+    dest: "{{ postgresql_config_path }}/postgresql.conf"
+    #  if an active directive already exists, replace it
+    regexp: "^{{ item | regex_replace(' *=.*', '') }} *=.+$"
+    #  if not, insert the line before the appropriate comment
+    #  directive
+    insertbefore: "^#{{ item | regex_replace(' *=.*', '') }} *=.+$"
+    line: "{{ item }}"
+    state: present
+  loop: "{{ postgresql_global_config_options }}"
+  notify: restart postgresql
+
+- name: Ensure postgres in started and enabled at boot
+  service:
+    name: "{{ postgresql_service }}"
+    state: started
+    enabled: yes
+    

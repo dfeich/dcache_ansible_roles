@@ -1,0 +1,17 @@
+---
+# vars file for roles/dcache_postgresql
+postgresql_bin_path: /usr/pgsql-{{ postgres_version }}/bin
+postgresql_config_path: /var/lib/pgsql/{{ postgres_version }}/data/
+postgresql_group: postgres
+postgresql_packages:
+  #- postgresql11-server
+  - postgresql{{ postgres_version }}-server
+  - postgresql{{ postgres_version }}-contrib
+  - postgresql{{ postgres_version }}-plpython
+  - postgresql{{ postgres_version }}-libs
+  - postgresql{{ postgres_version }}-devel
+  - postgresql{{ postgres_version }}
+  - postgresql-jdbc
+postgresql_user: postgres
+postgresql_service: postgresql-{{ postgres_version }}
+postgres_version: "11"
