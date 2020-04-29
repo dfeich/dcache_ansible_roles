@@ -1,0 +1,38 @@
+---
+# tasks file for roles/dcache_node
+- name: install our T3 dcache yum repo
+  yum_repository:
+    baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
+    # name is the section name of the repo
+    name: dcache
+    description: dCache repository (inst by ansible)
+    gpgcheck: no
+    enabled: yes
+    # to prevent inadvertent updates
+    exclude: dcache
+
+- name: install dcache package
+  yum:
+    name: dcache
+    state: present
+    disable_excludes: all
+
+- name: install dcache.conf file
+  template:
+    src: "dcache.conf.j2"
+    dest: "/etc/dcache/dcache.conf"
+    owner: root
+    group: root
+    mode: 0644
+  #TODO notify: restart dcache
+  #     when: postgresql_hba_entries | length > 0
+
+- name: install layout file for {{ inventory_hostname }}
+  tags: current
+  template:
+    src: dcache_layout.j2
+    dest: "/etc/dcache/layouts/{{ inventory_hostname }}"
+    owner: root
+    group: root
+    mode: 0644
+    

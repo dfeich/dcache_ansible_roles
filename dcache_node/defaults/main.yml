@@ -1,0 +1,48 @@
+---
+# defaults file for roles/dcache_node
+
+dcache_conf_lines:
+  # values for Storage Accounting Records (StAR)
+  - chimera.db.host={{ dcache_db_head}}
+  - star.gid-mapping = {{ dcache_site_gid_mapping | join(',') }}
+  # values for CRIC/SSR
+  - storage-descriptor.name = {{ dcache_site_name }}
+  - storage-descriptor.unique-id = {{ dcache_srm_door }}
+  # globals for: 'billing'
+  - billing.db.host={{ dcache_db_head}}
+  - billing.db.name=billing
+  - billing.db.user=srmdcache
+  # globals for: 'chimera'
+  - chimera.db.name=chimera
+  - chimera.db.url=jdbc:postgresql://{{ dcache_db_head }}/chimera?prepareThreshold=3
+  - chimera.db.user=chimera
+  # globals for: 'dcache'
+  #dcache.broker.scheme=satellite
+  - dcache.enable.space-reservation=true
+  - dcache.java.memory.direct=4096m
+  - dcache.java.memory.heap=4096m
+  - dcache.log.level.access=warn
+  - dcache.log.level.events=warn
+  - dcache.log.level.file=warn
+  - dcache.log.level.pinboard=warn
+  - dcache.log.level.remote=off
+  - dcache.log.mode=new
+  - dcache.log.server.host={{ dcache_db_head}}
+  - dcache.net.lan.port.max=25000
+  - dcache.net.lan.port.min=20000
+  - dcache.paths.billing=/var/log/dcache
+  - dcache.zookeeper.connection={{ zookeeper_connections|join(',') }}
+  # globals for: 'ftp'
+  - ftp.mover.queue=ftp
+  # globals for: 'httpd'
+  # httpd.enable.plots.pool-queue=true
+  # globals for: 'info-provider'
+  - info-provider.dcache-architecture=multidisk
+  - info-provider.dcache-quality-level=production
+  - info-provider.glue-se-status=Production
+  - info-provider.http.host={{ dcache_db_head}}
+  - info-provider.se-name=SRM endpoint for {{ dcache_site_name }}
+  - info-provider.se-unique-id=t3test-se01.psi.ch
+  - info-provider.site-unique-id={{ dcache_site_name }}
+  # globals for: 'poolmanager'
+  - poolmanager.enable.cache-hit-message=true
