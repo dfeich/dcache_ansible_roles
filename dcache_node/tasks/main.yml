@@ -31,8 +31,26 @@
   tags: current
   template:
     src: dcache_layout.j2
-    dest: "/etc/dcache/layouts/{{ inventory_hostname }}"
+    dest: "/etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
     owner: root
     group: root
     mode: 0644
     
+- name: set_fact if we have a gplazma cell
+  tags: current
+  set_fact:
+    _dcache_have_gplazma: "{{ dcache_layout | selectattr('domain', 'regex','.*gplazma$') | list | length | bool }}"
+- name: Is this the gplazma node?
+  tags: current
+  debug:
+    msg: "{{ _dcache_have_gplazma }}"
+
+- name: install gplazma.conf
+  tags: current
+  template:
+    src: gplazma.conf.j2
+    dest: /etc/dcache/gplazma.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: _dcache_have_gplazma
