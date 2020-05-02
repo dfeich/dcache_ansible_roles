@@ -101,3 +101,31 @@
   shell: "dcache database update && touch {{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
   args:
     creates: "{{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
+
+# Note: if the dir already exists, the chimera command will print
+#       an error about the failure to create, but the return value
+#       is still 0, i.e success. This allows to rerun this task, we
+#       do not need to protect it.
+- name: Let chimera create the top root dir {{ dcache_fsroot }}
+  shell: "/usr/bin/chimera mkdir {{ dcache_fsroot }}"
+
+- name: install the exports file
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start dcache so we have the NFS namespace available
+  shell: "/usr/bin/dcache start"
+    
+- name: put {{ dcache_fsroot }} in fstab and mount
+  mount:
+    path: '{{ dcache_fsroot }}'
+    src: 'localhost:{{ dcache_fsroot }}'
+    fstype: nfs
+    opts: vers=3,_netdev
+    state: mounted
+    boot: no
+    
