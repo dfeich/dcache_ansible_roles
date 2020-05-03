@@ -67,6 +67,19 @@
   debug:
     var: _dcache_pooldefs
 
+- name: extract vo list from pool definitions
+  tags: current
+  set_fact:
+    _volist: >-
+      {{ (volist | default([]) +  item.value["pools"]
+          | map(attribute="vo") | list) | unique  }}
+  loop: '{{ _dcache_pooldefs | dict2items}}'
+- name: show vo list
+  tags: current
+  debug:
+    var: _volist
+    
+    
 - name: set a fact if this host is running a poolmanager cell
   tags: current
   set_fact:

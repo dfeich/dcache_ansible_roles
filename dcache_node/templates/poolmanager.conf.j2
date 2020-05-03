@@ -8,16 +8,7 @@ psu set allpoolsactive off
 
 psu create unit -store *@*
 
-{# COLLECT VOs #}
-{# workaround with dict since jinja cannot affect global var in loop block #}
-{% set dummy = {'vostmp': []}  %}
-{% for host in  _dcache_pooldefs %}
-{#  stupid workaround to be able and use the update feature of jinja #}
-{% if dummy.update({'vostmp': dummy.vostmp +  _dcache_pooldefs[host]['pools'] | map(attribute='vo') | list }) %}{% endif %}
-{% endfor  %}
-{% set vos = dummy.vostmp | unique %}
-
-{% for vo in vos %}
+{% for vo in _volist %}
 psu create unit -store {{ vo }}:{{ vo }}@osm
 {% endfor %}
 psu create unit -net 0.0.0.0/0.0.0.0
@@ -29,13 +20,13 @@ psu addto ugroup any-protocol */*
 psu create ugroup any-store
 psu addto ugroup any-store *@*
 
-{% for vo in vos %}
+{% for vo in _volist %}
 psu create ugroup {{ vo }}_unit_group
 psu addto ugroup {{ vo }}_unit_group {{ vo }}:{{ vo }}@osm
 
 {% endfor %}
 
-{% for vo in vos %}
+{% for vo in _volist %}
 psu create pgroup {{ vo }}
 {% endfor %}
 
@@ -51,7 +42,7 @@ psu addto pgroup {{ pool.vo }} {{ poolname }}
 
 {% endfor %}
 
-{% for vo in vos %}
+{% for vo in _volist %}
 psu create link {{ vo }}-link {{ vo }}_unit_group world-net
 psu set link {{ vo }}-link -readpref=10 -writepref=10 -cachepref=0 -p2ppref=10
 psu add link {{ vo }}-link {{ vo }}
@@ -59,7 +50,7 @@ psu add link {{ vo }}-link {{ vo }}
 {% endfor %}
 
 
-{% for vo in vos %}
+{% for vo in _volist %}
 psu create linkGroup {{ vo }}-linkGroup
 psu set linkGroup custodialAllowed {{ vo }}-linkGroup false
 psu set linkGroup replicaAllowed {{ vo }}-linkGroup true
