@@ -33,7 +33,7 @@
   loop: "{{ postgresql_global_config_options }}"
   notify: restart postgresql
 
-- name: Ensure postgres in started and enabled at boot
+- name: Ensure postgres is started and enabled at boot
   service:
     name: "{{ postgresql_service }}"
     state: started
@@ -48,6 +48,7 @@
 - name: create chimera DB user
   postgresql_user:
     name: chimera
+    # TODO: use a vault password
     password: "pw-chimera"
     role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
   become: true
@@ -61,6 +62,7 @@
 - name: create dcache DB user
   postgresql_user:
     name: dcache
+    # TODO: use a vault password
     password: "pw-dcache"
     role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
   become: true

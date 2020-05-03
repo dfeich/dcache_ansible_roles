@@ -28,7 +28,6 @@
   #     when: postgresql_hba_entries | length > 0
 
 - name: install layout file for {{ inventory_hostname }}
-  tags: current
   template:
     src: dcache_layout.j2
     dest: "/etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
@@ -37,16 +36,13 @@
     mode: 0644
     
 - name: set a fact if this host is running a gplazma cell
-  tags: current
   set_fact:
     _dcache_have_gplazma: "{{ dcache_layout| default([]) | selectattr('domain', 'regex','.*gplazma$') | list | length | bool }}"
 - name: Is this the gplazma node?
-  tags: current
   debug:
-    msg: "{{ _dcache_have_gplazma }}"
+    var: _dcache_have_gplazma
 
 - name: install gplazma.conf
-  tags: current
   template:
     src: gplazma.conf.j2
     dest: /etc/dcache/gplazma.conf
@@ -71,4 +67,27 @@
   debug:
     var: _dcache_pooldefs
 
-  
+- name: set a fact if this host is running a poolmanager cell
+  tags: current
+  set_fact:
+    _dcache_have_poolmanager: "{{ dcache_layout| default([]) | selectattr('domain', 'regex','.*poolmanager$') | list | length | bool }}"
+- name: Is this the poolmanager node?
+  tags: current
+  debug:
+    var: _dcache_have_poolmanager
+
+# - name: show VOs
+#   debug:
+#     var: {{ _dcache_pooldefs | map}}
+
+- name: install the poolmanager configuration
+  tags: current
+  template:
+    backup: yes
+    src: poolmanager.conf.j2
+    dest: /var/lib/dcache/config/poolmanager.conf
+    owner: root
+    group: root
+    mode: 0644
+  when: _dcache_have_poolmanager
+    

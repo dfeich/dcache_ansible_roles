@@ -1,0 +1,79 @@
+{{ (ansible_managed + " for " + inventory_hostname) | comment }}
+
+rc set max threads 2147483647
+pm create -type=wass default
+pm set default -sameHostCopy=besteffort -sameHostRetry=notchecked -idle=0.0 -max-copies=500 -stage-allowed=no -p2p-oncost=yes -slope=0.0 -cpucostfactor=10.0 -spacecostfactor=1.0 -p2p=90.0% -p2p-allowed=yes -halt=0.0 -p2p-fortransfer=yes -alert=0.0 -fallback=0.0
+psu set regex off
+psu set allpoolsactive off
+
+psu create unit -store *@*
+
+{# COLLECT VOs #}
+{# workaround with dict since jinja cannot affect global var in loop block #}
+{% set dummy = {'vostmp': []}  %}
+{% for host in  _dcache_pooldefs %}
+{#  stupid workaround to be able and use the update feature of jinja #}
+{% if dummy.update({'vostmp': dummy.vostmp +  _dcache_pooldefs[host]['pools'] | map(attribute='vo') | list }) %}{% endif %}
+{% endfor  %}
+{% set vos = dummy.vostmp | unique %}
+
+{% for vo in vos %}
+psu create unit -store {{ vo }}:{{ vo }}@osm
+{% endfor %}
+psu create unit -net 0.0.0.0/0.0.0.0
+psu create unit -protocol */*
+
+psu create ugroup any-protocol
+psu addto ugroup any-protocol */*
+
+psu create ugroup any-store
+psu addto ugroup any-store *@*
+
+{% for vo in vos %}
+psu create ugroup {{ vo }}_unit_group
+psu addto ugroup {{ vo }}_unit_group {{ vo }}:{{ vo }}@osm
+
+{% endfor %}
+
+{% for vo in vos %}
+psu create pgroup {{ vo }}
+{% endfor %}
+
+
+{# TODO: it is not nice that I have to double the code for composing the poolnames from the layout #}
+{% for host in  _dcache_pooldefs %}
+{%   set shorthost = host | regex_replace('^([^\.]+)\..*', '\\1') %}
+{%   for pool in _dcache_pooldefs[host]['pools'] %}
+{%     set poolname = shorthost + "_" + pool.vo + "_" + (loop.index|string) %}
+psu create pool {{ poolname }}
+psu addto pgroup {{ pool.vo }} {{ poolname }}
+{%   endfor %}
+
+{% endfor %}
+
+{% for vo in vos %}
+psu create link {{ vo }}-link {{ vo }}_unit_group world-net
+psu set link {{ vo }}-link -readpref=10 -writepref=10 -cachepref=0 -p2ppref=10
+psu add link {{ vo }}-link {{ vo }}
+
+{% endfor %}
+
+
+{% for vo in vos %}
+psu create linkGroup {{ vo }}-linkGroup
+psu set linkGroup custodialAllowed {{ vo }}-linkGroup false
+psu set linkGroup replicaAllowed {{ vo }}-linkGroup true
+psu set linkGroup nearlineAllowed {{ vo }}-linkGroup false
+psu set linkGroup outputAllowed {{ vo }}-linkGroup true
+psu set linkGroup onlineAllowed {{ vo }}-linkGroup true
+psu addto linkGroup {{ vo }}-linkGroup {{ vo }}-link
+
+{% endfor %}
+
+rc onerror suspend
+rc set max retries 3
+rc set retry 900
+rc set poolpingtimer 600
+rc set max restore unlimited
+
+
