@@ -34,10 +34,16 @@
     owner: root
     group: root
     mode: 0644
-    
+
 - name: set a fact if this host is running a gplazma cell
   set_fact:
-    _dcache_have_gplazma: "{{ dcache_layout| default([]) | selectattr('domain', 'regex','.*gplazma$') | list | length | bool }}"
+    _dcache_have_gplazma: >-
+      {{ dcache_layout| default([])
+                      | selectattr('domain','defined')
+                      | list
+                      | selectattr('domain', 'regex','.*gplazma$')
+                      | list | length | bool }}
+
 - name: Is this the gplazma node?
   debug:
     var: _dcache_have_gplazma
@@ -83,7 +89,12 @@
 - name: set a fact if this host is running a poolmanager cell
   tags: current
   set_fact:
-    _dcache_have_poolmanager: "{{ dcache_layout| default([]) | selectattr('domain', 'regex','.*poolmanager$') | list | length | bool }}"
+    _dcache_have_poolmanager: >-
+      {{ dcache_layout| default([])
+                      | selectattr('domain','defined')
+                      | list
+                      | selectattr('domain', 'regex','.*poolmanager$')
+                      | list | length | bool }}
 - name: Is this the poolmanager node?
   tags: current
   debug:

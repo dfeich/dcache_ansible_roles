@@ -18,9 +18,11 @@ pool.lfs={{ pool.lsf | default('precious') }}
 {%  endfor %}
 {%endif %}
 
-{%if dcache_layout is defined %}
+{% if dcache_layout is defined %}
 {% for domainentry in dcache_layout %}
+{%   if domainentry.domain is defined %}
 [{{ domainentry.domain }}]
+{%   endif  %}
 {%   if domainentry.attr is defined %}
 {%     for attrentry in domainentry.attr %}
 {%       for key,value in attrentry.items() %}
@@ -30,6 +32,6 @@ pool.lfs={{ pool.lsf | default('precious') }}
 {%   endif %}
 
 {% endfor %}
-{%endif %}
+{% endif %}
 
 
