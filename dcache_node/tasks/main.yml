@@ -39,7 +39,7 @@
 - name: set a fact if this host is running a gplazma cell
   tags: current
   set_fact:
-    _dcache_have_gplazma: "{{ dcache_layout | selectattr('domain', 'regex','.*gplazma$') | list | length | bool }}"
+    _dcache_have_gplazma: "{{ dcache_layout| default([]) | selectattr('domain', 'regex','.*gplazma$') | list | length | bool }}"
 - name: Is this the gplazma node?
   tags: current
   debug:

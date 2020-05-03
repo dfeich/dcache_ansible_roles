@@ -1,4 +1,24 @@
 {{ (ansible_managed + " for " + inventory_hostname) | comment }}
+
+{%if dcache_pool_def is defined %}
+{%  set topdir = dcache_pool_def.topdir | default("/pools") %}
+{%  set shorthost = inventory_hostname | regex_replace('^([^\.]+)\..*', '\\1') %}
+{%  for pool in dcache_pool_def.pools %}
+{%    set poolname = shorthost + "_" + pool.vo + "_" + (loop.index|string) %}
+[{{ poolname }}-pooldDomain]
+[{{ poolname }}-poolDomain/pool]
+pool.name={{ poolname }}
+pool.path={{ topdir }}/{{ poolname }}
+{%    if pool.size is defined %}
+pool.size={{ pool.size }}
+{%    endif %}
+pool.wait-for-files=${pool.path}/data
+pool.lfs={{ pool.lsf | default('precious') }}
+
+{%  endfor %}
+{%endif %}
+
+{%if dcache_layout is defined %}
 {% for domainentry in dcache_layout %}
 [{{ domainentry.domain }}]
 {%   if domainentry.attr is defined %}
@@ -10,5 +30,6 @@
 {%   endif %}
 
 {% endfor %}
+{%endif %}
 
 
