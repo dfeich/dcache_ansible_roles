@@ -46,6 +46,27 @@
     group: root
     mode: 0644
 
+
+- name: set a fact if this host is running an admin cell
+  set_fact:
+    _dcache_have_admin: >-
+      {{ dcache_layout| default([])
+                      | selectattr('domain','defined')
+                      | list
+                      | selectattr('domain', 'regex','.*admin$')
+                      | list | length | bool }}
+- name: Does this host run an admin cell?
+  debug:
+    var: _dcache_have_admin
+
+- name: copy authorized keys for admin cell access
+  copy:
+    src: '{{ admin_authorized_keys_file }}'
+    dest: /etc/dcache/admin/authorized_keys2
+    owner: root
+    group: dcache
+    mode: 0440
+
 - name: set a fact if this host is running a gplazma cell
   set_fact:
     _dcache_have_gplazma: >-
@@ -125,4 +146,40 @@
     group: root
     mode: 0644
   when: _dcache_have_poolmanager
-    
+
+# # TODO: the way of starting/restarting needs to be revised
+# - name: Start dcache on this node
+#   shell: "/usr/bin/dcache start"
+#   register: dcache_started_status
+# - name: Status messages from dcache start
+#   debug:
+#     msg: dcache_started_status.stdout
+
+- name: create /etc/grid-security dir
+  file:
+    state: directory
+    path: /etc/grid-security
+    owner: root
+    group: root
+    mode: 0755
+
+- name: install grid hostcert if defined
+  copy:
+    src: '{{ dcache_hostcert }}'
+    dest: /etc/grid-security/hostcert.pem
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_hostcert is defined
+
+- name: install grid hostkey if defined
+  copy:
+    src: '{{ dcache_hostkey }}'
+    dest: /etc/grid-security/hostkey.pem
+    backup: yes
+    owner: root
+    group: root
+    mode: 0400
+  when: dcache_hostkey is defined
+        
