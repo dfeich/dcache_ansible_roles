@@ -5,7 +5,7 @@
 {%  set shorthost = inventory_hostname | regex_replace('^([^\.]+)\..*', '\\1') %}
 {%  for pool in dcache_pool_def.pools %}
 {%    set poolname = shorthost + "_" + pool.vo + "_" + (loop.index|string) %}
-[{{ poolname }}-pooldDomain]
+[{{ poolname }}-poolDomain]
 [{{ poolname }}-poolDomain/pool]
 pool.name={{ poolname }}
 pool.path={{ topdir }}/{{ poolname }}

@@ -20,6 +20,9 @@ psu addto ugroup any-protocol */*
 psu create ugroup any-store
 psu addto ugroup any-store *@*
 
+psu create ugroup world-net
+psu addto ugroup world-net 0.0.0.0/0.0.0.0
+
 {% for vo in _volist %}
 psu create ugroup {{ vo }}_unit_group
 psu addto ugroup {{ vo }}_unit_group {{ vo }}:{{ vo }}@osm
