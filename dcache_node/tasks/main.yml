@@ -8,6 +8,7 @@
   when: item not in  vars
   loop:
     - dcache_db_head
+    - dcache_db_owner
     - dcache_srm_door
     - zookeeper_connections
     
@@ -98,7 +99,7 @@
     _dcache_pooldefs: >-
       {{ _dcache_pooldefs | default({})
                           | combine({item: hostvars[item]["dcache_pool_def"]}) }}
-  loop: '{{ groups["dcache"] }}'
+  loop: '{{ groups[dcache_inventory_group] }}'
 
 - name: show collected pool definitions
   tags: current
@@ -168,7 +169,7 @@
     src: '{{ dcache_hostcert }}'
     dest: /etc/grid-security/hostcert.pem
     backup: yes
-    owner: root
+    owner: dcache
     group: root
     mode: 0644
   when: dcache_hostcert is defined
@@ -178,7 +179,7 @@
     src: '{{ dcache_hostkey }}'
     dest: /etc/grid-security/hostkey.pem
     backup: yes
-    owner: root
+    owner: dcache
     group: root
     mode: 0400
   when: dcache_hostkey is defined

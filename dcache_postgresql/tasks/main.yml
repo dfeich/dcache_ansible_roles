@@ -61,7 +61,7 @@
 # createuser -U postgres --no-superuser --no-createrole --createdb --pwprompt dcache
 - name: create dcache DB user
   postgresql_user:
-    name: dcache
+    name: "{{ dcache_db_owner }}"
     # TODO: use a vault password
     password: "pw-dcache"
     role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
@@ -73,13 +73,13 @@
 - name: create dcache DB
   postgresql_db:
     name: dcache
-    session_role: dcache
+    session_role: "{{ dcache_db_owner }}"
     
 # createdb -O dcache -U postgres billing
 - name: create billing DB
   postgresql_db:
     name: billing
-    owner: dcache
+    owner: "{{ dcache_db_owner }}"
 
 - name: install our T3 dcache yum repo
   yum_repository:

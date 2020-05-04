@@ -11,7 +11,7 @@ dcache_conf_lines:
   # globals for: 'billing'
   - billing.db.host={{ dcache_db_head }}
   - billing.db.name=billing
-  - billing.db.user=srmdcache
+  - billing.db.user={{ dcache_db_owner }}
   # globals for: 'chimera'
   - chimera.db.name=chimera
   - chimera.db.url=jdbc:postgresql://{{ dcache_db_head }}/chimera?prepareThreshold=3
@@ -53,3 +53,6 @@ dcache_gplazma_conf:
   - map     optional  vorolemap
   - map     requisite authzdb
   - session requisite authzdb
+
+# postgres role owning the dcache DB
+dcache_db_owner: dcache
