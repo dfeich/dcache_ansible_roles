@@ -3,13 +3,13 @@
 
 dcache_conf_lines:
   # values for Storage Accounting Records (StAR)
-  - chimera.db.host={{ dcache_db_head}}
+  - chimera.db.host={{ dcache_db_head }}
   - star.gid-mapping = {{ dcache_site_gid_mapping | join(',') }}
   # values for CRIC/SSR
   - storage-descriptor.name = {{ dcache_site_name }}
   - storage-descriptor.unique-id = {{ dcache_srm_door }}
   # globals for: 'billing'
-  - billing.db.host={{ dcache_db_head}}
+  - billing.db.host={{ dcache_db_head }}
   - billing.db.name=billing
   - billing.db.user=srmdcache
   # globals for: 'chimera'
@@ -27,7 +27,7 @@ dcache_conf_lines:
   - dcache.log.level.pinboard=warn
   - dcache.log.level.remote=off
   - dcache.log.mode=new
-  - dcache.log.server.host={{ dcache_db_head}}
+  - dcache.log.server.host={{ dcache_db_head }}
   - dcache.net.lan.port.max=25000
   - dcache.net.lan.port.min=20000
   - dcache.paths.billing=/var/log/dcache
@@ -40,9 +40,16 @@ dcache_conf_lines:
   - info-provider.dcache-architecture=multidisk
   - info-provider.dcache-quality-level=production
   - info-provider.glue-se-status=Production
-  - info-provider.http.host={{ dcache_db_head}}
+  - info-provider.http.host={{ dcache_db_head }}
   - info-provider.se-name=SRM endpoint for {{ dcache_site_name }}
   - info-provider.se-unique-id=t3test-se01.psi.ch
   - info-provider.site-unique-id={{ dcache_site_name }}
   # globals for: 'poolmanager'
   - poolmanager.enable.cache-hit-message=true
+
+dcache_gplazma_conf:
+  - auth    optional  x509
+  - auth    optional  voms
+  - map     optional  vorolemap
+  - map     requisite authzdb
+  - session requisite authzdb

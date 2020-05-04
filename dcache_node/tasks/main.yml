@@ -1,5 +1,16 @@
 ---
 # tasks file for roles/dcache_node
+
+# I want to check these vars before we do anything on the nodes!
+- name: Check whether essential vars are defined
+  fail:
+    msg: variable {{ item }} is not defined
+  when: item not in  vars
+  loop:
+    - dcache_db_head
+    - dcache_srm_door
+    - zookeeper_connections
+    
 - name: install our T3 dcache yum repo
   yum_repository:
     baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
