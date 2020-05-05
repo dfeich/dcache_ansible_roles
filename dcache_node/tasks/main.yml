@@ -150,9 +150,11 @@
 
 - name: get list of pool paths from layout file
   tags: dfcur
-  shell: "sed  -n 's/^pool.path=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
+  shell:
+    cmd: "sed  -n 's/^pool.path=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
+    warn: no
   register: outp_pool_list
-  changed_when: false
+  changed_when: False
 
 - name: create pool directories for pools found in layout file
   tags: dfcur
