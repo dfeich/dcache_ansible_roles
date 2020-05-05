@@ -148,14 +148,32 @@
     mode: 0644
   when: _dcache_have_poolmanager
 
-# # TODO: the way of starting/restarting needs to be revised
-# - name: Start dcache on this node
-#   shell: "/usr/bin/dcache start"
-#   register: dcache_started_status
-# - name: Status messages from dcache start
-#   debug:
-#     msg: dcache_started_status.stdout
+- name: get list of pool paths from layout file
+  tags: dfcur
+  shell: "sed  -n 's/^pool.path=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
+  register: outp_pool_list
+  changed_when: false
 
+- name: create pool directories for pools found in layout file
+  tags: dfcur
+  file:
+    state: directory
+    path: '{{ item }}'
+    owner: dcache
+    group: dcache
+    mode: 0755
+  loop: '{{ outp_pool_list.stdout.split() }}'
+
+- name: create data dir within pool directories
+  tags: dfcur
+  file:
+    state: directory
+    path: '{{ item }}/data'
+    owner: dcache
+    group: dcache
+    mode: 0755
+  loop: '{{ outp_pool_list.stdout.split() }}'
+  
 - name: create /etc/grid-security dir
   file:
     state: directory
@@ -183,4 +201,12 @@
     group: root
     mode: 0400
   when: dcache_hostkey is defined
-        
+
+# # TODO: the way of starting/restarting needs to be revised
+#   also, whether this is the right place to start services
+# - name: Start dcache on this node
+#   shell: "/usr/bin/dcache start"
+#   register: dcache_started_status
+# - name: Status messages from dcache start
+#   debug:
+#     msg: dcache_started_status.stdout

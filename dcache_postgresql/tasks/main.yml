@@ -1,5 +1,9 @@
 ---
 # tasks file for roles/dcache_postgresql
+
+# TODO: maybe must make sure that now other node is still trying
+# to access the DB
+
 - name: Install postgresql packages
   yum:
     name: "{{ postgresql_packages }}"
@@ -99,17 +103,11 @@
     disable_excludes: all
 
 # only run this once. Place a file to remember.
+# TODO: For this to work, the layout file must contain the cells requiring the DB
 - name: Let dcache initialize its database
   shell: "dcache database update && touch {{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
   args:
     creates: "{{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
-
-# Note: if the dir already exists, the chimera command will print
-#       an error about the failure to create, but the return value
-#       is still 0, i.e success. This allows to rerun this task, we
-#       do not need to protect it.
-- name: Let chimera create the top root dir {{ dcache_fsroot }}
-  shell: "/usr/bin/chimera mkdir {{ dcache_fsroot }}"
 
 - name: install the exports file
   template:
@@ -121,8 +119,15 @@
 
 - name: Start dcache so we have the NFS namespace available
   shell: "/usr/bin/dcache start"
-    
-- name: put {{ dcache_fsroot }} in fstab and mount
+
+# Note: if the dir already exists, the chimera command will print
+#       an error about the failure to create, but the return value
+#       is still 0, i.e success. This allows to rerun this task, we
+#       do not need to protect it.
+- name: Let chimera create the top root dir {{ dcache_fsroot }}
+  shell: "/usr/bin/chimera mkdir {{ dcache_fsroot }}"
+  
+- name: put dcache mountpoint {{ dcache_fsroot }} in fstab and mount
   mount:
     path: '{{ dcache_fsroot }}'
     src: 'localhost:{{ dcache_fsroot }}'

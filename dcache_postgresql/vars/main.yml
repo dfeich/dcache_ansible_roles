@@ -12,6 +12,7 @@ postgresql_packages:
   - postgresql{{ postgres_version }}-devel
   - postgresql{{ postgres_version }}
   - postgresql-jdbc
+  - python-psycopg2
 postgresql_user: postgres
 postgresql_service: postgresql-{{ postgres_version }}
 postgres_version: "11"
