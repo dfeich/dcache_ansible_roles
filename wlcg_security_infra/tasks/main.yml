@@ -1,0 +1,35 @@
+---
+# tasks file for roles/wlcg_security_infra
+- name: install wlcg repo
+  yum_repository:
+    name: wlcg
+    baseurl: http://linuxsoft.cern.ch/wlcg/centos7/$basearch/
+    # name is the section name of the repo
+    description: Cern WLCG packages
+    gpgkey: http://linuxsoft.cern.ch/wlcg/RPM-GPG-KEY-wlcg
+    gpgcheck: yes
+    enabled: yes
+    priority: 1
+
+- name: install EGI-trustanchors repo
+  yum_repository:
+    name: EGI-trustanchors
+    description: EGI trustanchors Repository
+    baseurl: http://repository.egi.eu/sw/production/cas/1/current/
+    gpgkey: http://repository.egi.eu/sw/production/cas/1/GPG-KEY-EUGridPMA-RPM-3
+    gpgcheck: yes
+    enabled: yes
+    priority: 1
+
+- name: install CA certificate and VO VOMS packages
+  # fetch-crl from epel, others from wlcg (may need to add repo if not provided by puppet)
+  yum:
+    name: '{{ item }}'
+    state: present
+  loop:
+    - ca-policy-egi-core
+    - fetch-crl
+    - wlcg-voms-ops
+    - wlcg-voms-cms
+   
+# Note: fetch-crl also adds a cron job that is activated through systemd
