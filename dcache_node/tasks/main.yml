@@ -37,7 +37,6 @@
     group: root
     mode: 0644
   #TODO notify: restart dcache
-  #     when: postgresql_hba_entries | length > 0
 
 - name: install layout file for {{ inventory_hostname }}
   template:
@@ -47,7 +46,6 @@
     group: root
     mode: 0644
 
-
 - name: set a fact if this host is running an admin cell
   set_fact:
     _dcache_have_admin: >-
@@ -56,9 +54,6 @@
                       | list
                       | selectattr('domain', 'regex','.*admin$')
                       | list | length | bool }}
-- name: Does this host run an admin cell?
-  debug:
-    var: _dcache_have_admin
 
 - name: copy authorized keys for admin cell access
   copy:
@@ -77,39 +72,9 @@
                       | selectattr('domain', 'regex','.*gplazma$')
                       | list | length | bool }}
 
-- name: Is this the gplazma node?
-  debug:
-    var: _dcache_have_gplazma
-
-- name: install gplazma.conf
-  template:
-    src: gplazma.conf.j2
-    dest: /etc/dcache/gplazma.conf
-    backup: yes
-    owner: root
-    group: root
-    mode: 0644
+- name: run gplazma taks if we have the gplazma cell
+  include_tasks: gplazma.yml
   when: _dcache_have_gplazma
-
-- name: install grid-vorolemap
-  template:
-    src: grid-vorolemap.j2
-    dest: /etc/grid-security/grid-vorolemap
-    backup: yes
-    owner: root
-    group: root
-    mode: 0644
-  when: dcache_deploy_vorolemap and _dcache_have_gplazma
-    
-- name: install storage-authzdb
-  template:
-    src: storage-authzdb.j2
-    dest: /etc/grid-security/storage-authzdb
-    backup: yes
-    owner: root
-    group: root
-    mode: 0644
-  when: dcache_deploy_authzdb and _dcache_have_gplazma
 
 - name: set a fact if this host is running an spacemanager cell
   set_fact:
@@ -129,31 +94,10 @@
     group: dcache
     mode: 0644
   when: _dcache_have_spacemanager
-  
-# this is for the later poolmanager definitions
-# we build up a simpler dict structure with info about all pools
-- name: collect pool definitions of all pools
-  when: hostvars[item]["dcache_pool_def"] is defined
-  set_fact:
-    _dcache_pooldefs: >-
-      {{ _dcache_pooldefs | default({})
-                          | combine({item: hostvars[item]["dcache_pool_def"]}) }}
-  loop: '{{ groups[dcache_inventory_group] }}'
 
-- name: show collected pool definitions
-  debug:
-    var: _dcache_pooldefs
-
-- name: extract vo list from pool definitions
-  set_fact:
-    _volist: >-
-      {{ (volist | default([]) +  item.value["pools"]
-          | map(attribute="vo") | list) | unique  }}
-  loop: '{{ _dcache_pooldefs | dict2items}}'
-- name: show vo list
-  debug:
-    var: _volist
-    
+- name: run pool tasks if this host has a pool definition
+  include_tasks: pool.yml
+  when: dcache_pool_def is defined
     
 - name: set a fact if this host is running a poolmanager cell
   set_fact:
@@ -163,49 +107,11 @@
                       | list
                       | selectattr('domain', 'regex','.*poolmanager$')
                       | list | length | bool }}
-- name: Is this the poolmanager node?
-  debug:
-    var: _dcache_have_poolmanager
 
-# - name: show VOs
-#   debug:
-#     var: {{ _dcache_pooldefs | map}}
-
-- name: install the poolmanager configuration
-  template:
-    backup: yes
-    src: poolmanager.conf.j2
-    dest: /var/lib/dcache/config/poolmanager.conf
-    owner: root
-    group: root
-    mode: 0644
+- name: Run poolmanager tasks if this host has the poolmanager cell
+  include_tasks: poolmanager.yml
   when: _dcache_have_poolmanager
 
-- name: get list of pool paths from layout file
-  shell:
-    cmd: "sed  -n 's/^pool.path=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
-    warn: no
-  register: outp_pool_list
-  changed_when: False
-
-- name: create pool directories for pools found in layout file
-  file:
-    state: directory
-    path: '{{ item }}'
-    owner: dcache
-    group: dcache
-    mode: 0755
-  loop: '{{ outp_pool_list.stdout.split() }}'
-
-- name: create data dir within pool directories
-  file:
-    state: directory
-    path: '{{ item }}/data'
-    owner: dcache
-    group: dcache
-    mode: 0755
-  loop: '{{ outp_pool_list.stdout.split() }}'
-  
 - name: create /etc/grid-security dir
   file:
     state: directory

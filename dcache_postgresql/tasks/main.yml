@@ -85,23 +85,6 @@
     name: billing
     owner: "{{ dcache_db_owner }}"
 
-- name: install our T3 dcache yum repo
-  yum_repository:
-    baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
-    # name is the section name of the repo
-    name: dcache
-    description: dCache repository (inst by ansible)
-    gpgcheck: no
-    enabled: yes
-    # to prevent inadvertent updates
-    exclude: dcache
-
-- name: install dcache package
-  yum:
-    name: dcache
-    state: present
-    disable_excludes: all
-
 # only run this once. Place a file to remember.
 # TODO: For this to work, the layout file must contain the cells requiring the DB
 - name: Let dcache initialize its database
@@ -119,6 +102,8 @@
 
 - name: Start dcache so we have the NFS namespace available
   shell: "/usr/bin/dcache start"
+  # TODO: correct setting of when_changed. Maybe implement
+  #       a test for dcache running or use a handler
 
 # Note: if the dir already exists, the chimera command will print
 #       an error about the failure to create, but the return value
@@ -126,6 +111,7 @@
 #       do not need to protect it.
 - name: Let chimera create the top root dir {{ dcache_fsroot }}
   shell: "/usr/bin/chimera mkdir {{ dcache_fsroot }}"
+  # TODO: correct implementation of when_changed
   
 - name: put dcache mountpoint {{ dcache_fsroot }} in fstab and mount
   mount:

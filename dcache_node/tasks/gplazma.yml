@@ -1,0 +1,31 @@
+- name: install gplazma.conf
+  template:
+    src: gplazma.conf.j2
+    dest: /etc/dcache/gplazma.conf
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+#  when: _dcache_have_gplazma
+
+- name: install grid-vorolemap
+  template:
+    src: grid-vorolemap.j2
+    dest: /etc/grid-security/grid-vorolemap
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_deploy_vorolemap
+  #when: dcache_deploy_vorolemap and _dcache_have_gplazma
+    
+- name: install storage-authzdb
+  template:
+    src: storage-authzdb.j2
+    dest: /etc/grid-security/storage-authzdb
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_deploy_authzdb
+  #when: dcache_deploy_authzdb and _dcache_have_gplazma

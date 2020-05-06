@@ -1,0 +1,34 @@
+# we build up a simpler dict structure with info about all pools
+- name: collect pool definitions of all pools
+  when: hostvars[item]["dcache_pool_def"] is defined
+  set_fact:
+    _dcache_pooldefs: >-
+      {{ _dcache_pooldefs | default({})
+                          | combine({item: hostvars[item]["dcache_pool_def"]}) }}
+  loop: '{{ groups[dcache_inventory_group] }}'
+
+- name: show collected pool definitions
+  debug:
+    var: _dcache_pooldefs
+    verbosity: 1
+
+- name: extract VO list from pool definitions
+  set_fact:
+    _volist: >-
+      {{ (volist | default([]) +  item.value["pools"]
+          | map(attribute="vo") | list) | unique  }}
+  loop: '{{ _dcache_pooldefs | dict2items}}'
+- name: show extracted VO list
+  debug:
+    var: _volist
+    verbosity: 1
+    
+- name: install the poolmanager configuration
+  template:
+    backup: yes
+    src: poolmanager.conf.j2
+    dest: /var/lib/dcache/config/poolmanager.conf
+    owner: root
+    group: root
+    mode: 0644
+#  when: _dcache_have_poolmanager
