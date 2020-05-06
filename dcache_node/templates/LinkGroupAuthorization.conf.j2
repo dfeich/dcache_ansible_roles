@@ -1,0 +1,9 @@
+{{ ansible_managed | comment }}
+
+{% for vo,lines in dcache_linkgrp_authz.items() %}
+LinkGroup {{ vo }}-linkGroup
+{%   for line in lines %}
+{{ line }}
+{%   endfor %}
+
+{% endfor %}

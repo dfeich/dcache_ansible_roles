@@ -1,0 +1,8 @@
+{{ ansible_managed | comment }}
+#
+# This file maps VOMS information to local user accounts
+# DN   VOMS    local_account
+
+{% for line in dcache_vorolemap %}
+"{{ line[0] }}"    "{{ line[1] }}"   {{ line[2] }}
+{% endfor %}

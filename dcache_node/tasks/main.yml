@@ -85,15 +85,54 @@
   template:
     src: gplazma.conf.j2
     dest: /etc/dcache/gplazma.conf
+    backup: yes
     owner: root
     group: root
     mode: 0644
   when: _dcache_have_gplazma
 
+- name: install grid-vorolemap
+  template:
+    src: grid-vorolemap.j2
+    dest: /etc/grid-security/grid-vorolemap
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_deploy_vorolemap and _dcache_have_gplazma
+    
+- name: install storage-authzdb
+  template:
+    src: storage-authzdb.j2
+    dest: /etc/grid-security/storage-authzdb
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_deploy_authzdb and _dcache_have_gplazma
+
+- name: set a fact if this host is running an spacemanager cell
+  set_fact:
+    _dcache_have_spacemanager: >-
+      {{ dcache_layout| default([])
+                      | selectattr('domain','defined')
+                      | list
+                      | selectattr('domain', 'regex','.*spacemanager$')
+                      | list | length | bool }}
+
+- name: install the LinkGroupAuthorization.conf file
+  template:
+    src: LinkGroupAuthorization.conf.j2
+    dest: /etc/dcache/LinkGroupAuthorization.conf
+    backup: yes
+    owner: dcache
+    group: dcache
+    mode: 0644
+  when: _dcache_have_spacemanager
+  
 # this is for the later poolmanager definitions
 # we build up a simpler dict structure with info about all pools
 - name: collect pool definitions of all pools
-  tags: current
   when: hostvars[item]["dcache_pool_def"] is defined
   set_fact:
     _dcache_pooldefs: >-
@@ -102,25 +141,21 @@
   loop: '{{ groups[dcache_inventory_group] }}'
 
 - name: show collected pool definitions
-  tags: current
   debug:
     var: _dcache_pooldefs
 
 - name: extract vo list from pool definitions
-  tags: current
   set_fact:
     _volist: >-
       {{ (volist | default([]) +  item.value["pools"]
           | map(attribute="vo") | list) | unique  }}
   loop: '{{ _dcache_pooldefs | dict2items}}'
 - name: show vo list
-  tags: current
   debug:
     var: _volist
     
     
 - name: set a fact if this host is running a poolmanager cell
-  tags: current
   set_fact:
     _dcache_have_poolmanager: >-
       {{ dcache_layout| default([])
@@ -129,7 +164,6 @@
                       | selectattr('domain', 'regex','.*poolmanager$')
                       | list | length | bool }}
 - name: Is this the poolmanager node?
-  tags: current
   debug:
     var: _dcache_have_poolmanager
 
@@ -138,7 +172,6 @@
 #     var: {{ _dcache_pooldefs | map}}
 
 - name: install the poolmanager configuration
-  tags: current
   template:
     backup: yes
     src: poolmanager.conf.j2
@@ -149,7 +182,6 @@
   when: _dcache_have_poolmanager
 
 - name: get list of pool paths from layout file
-  tags: dfcur
   shell:
     cmd: "sed  -n 's/^pool.path=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
     warn: no
@@ -157,7 +189,6 @@
   changed_when: False
 
 - name: create pool directories for pools found in layout file
-  tags: dfcur
   file:
     state: directory
     path: '{{ item }}'
@@ -167,7 +198,6 @@
   loop: '{{ outp_pool_list.stdout.split() }}'
 
 - name: create data dir within pool directories
-  tags: dfcur
   file:
     state: directory
     path: '{{ item }}/data'
