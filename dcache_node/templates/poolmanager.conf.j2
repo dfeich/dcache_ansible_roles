@@ -48,7 +48,7 @@ psu addto pgroup {{ pool.vo }} {{ poolname }}
 {% for vo in _volist %}
 psu create link {{ vo }}-link {{ vo }}_unit_group world-net
 psu set link {{ vo }}-link -readpref=10 -writepref=10 -cachepref=0 -p2ppref=10
-psu add link {{ vo }}-link {{ vo }}
+psu addto link {{ vo }}-link {{ vo }}
 
 {% endfor %}
 
