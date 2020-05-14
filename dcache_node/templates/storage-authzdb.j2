@@ -1,7 +1,12 @@
+{{ ansible_managed | comment }}
+# Line format:
+# authorize <username> (read-only|read-write) <UID> <GID>[,<GID>]* <homedir> <rootdir>
+
 version 2.1
 
 {% for directive,lines in dcache_authzdb.items() %}
 {%   for line in lines %}
-{{ directive }} {%for entry in line %}{{ entry }}   {% endfor %} / / /
+{{ directive }} {%for entry in line %}{{ entry }}   {% endfor %}
+   
 {%   endfor %}
 {% endfor %}

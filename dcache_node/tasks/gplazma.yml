@@ -29,3 +29,14 @@
     mode: 0644
   when: dcache_deploy_authzdb
   #when: dcache_deploy_authzdb and _dcache_have_gplazma
+
+- name: install dcache.kpwd
+  template:
+    src: dcache.kpwd.j2
+    dest: /etc/dcache/dcache.kpwd
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_deploy_kpwd
+  

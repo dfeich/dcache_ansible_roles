@@ -62,6 +62,7 @@
     owner: root
     group: dcache
     mode: 0440
+  when: _dcache_have_admin
 
 - name: set a fact if this host is running a gplazma cell
   set_fact:

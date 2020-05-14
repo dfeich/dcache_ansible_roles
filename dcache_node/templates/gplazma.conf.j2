@@ -1,4 +1,48 @@
 {{ ansible_managed | comment }}
+################################################################################
+# Login Phases:
+#   [auth]
+#       - auth-plugins are used to read the users public and private
+#         credentials and ask some authority, if those are valid for accessing 
+#         the system. 
+#   [map]
+#       - map-plugins map the user information obtained in the auth step to UID
+#         and GIDs. 
+#       - This may also be done in several steps (e.g., the vorolemap plugin 
+#         maps the users DN+FQAN to a username which is then mapped to UID/GIDs
+#         by the authzdb plugin)
+#   [account]
+#       - account-plugins verify the validity of a possibly mapped of the user 
+#         and may reject the login depending on information gathered within the 
+#         map step.
+#   [session]
+#       - session plugins usually enrich the session with additional attributes
+#         like the user’s home directory.
+#   [identity]
+#       - identity plugins are responsible for mapping UID and GID to user
+#         names and vice versa during the work with dCache. 
+################################################################################
+
+################################################################################
+# Modifiers:
+#   [optional]
+#       - The success or failure of this plugin is only important if it is the 
+#         only plugin in the stack associated with this type. 
+#   [sufficient]
+#       - Success of such a plugin is enough to satisfy the authentication 
+#         requirements of the stack of plugins (if a prior required plugin has
+#         failed the success of this one is ignored). 
+#       - A failure of this plugin isn't deemed as fatal for the login attempt.
+#       - If the plugin succeeds gPlazma2 immediately proceeds with the next 
+#         plugin type or returns control to the door if this was the last stack. 
+#   [required]
+#       - Failure of such a plugin will ultimately lead to gPlazma2 returning 
+#         failure but only after the remaining plugins for this type have been 
+#         invoked. 
+#   [requisite]
+#       - Like required, however, in the case that such a plugin returns a
+#         failure, control is directly returned to the d
+################################################################################
 
 {% for line in dcache_gplazma_conf %}
 {{ line }}
