@@ -18,4 +18,6 @@ postgresql_global_config_options:
   - syslog_ident = 'postgres'
   - temp_buffers = 8MB
   - update_process_title = on
-  - work_mem = 3000MB	
+  - work_mem = 3000MB
+  
+dcache_nfs_mountopt: "_netdev"

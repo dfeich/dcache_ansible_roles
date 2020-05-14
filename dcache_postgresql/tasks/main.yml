@@ -118,7 +118,7 @@
     path: '{{ dcache_fsroot }}'
     src: 'localhost:{{ dcache_fsroot }}'
     fstype: nfs
-    opts: vers=3,_netdev
+    opts: '{{ dcache_nfs_mountopt }}'
     state: mounted
     boot: no
     
