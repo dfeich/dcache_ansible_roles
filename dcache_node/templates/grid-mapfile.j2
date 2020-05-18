@@ -1,0 +1,8 @@
+{{ ansible_managed | comment }}
+#
+# This file maps x509 DN information to local user accounts
+#   DN        local_account
+
+{% for line in dcache_grid_mapfile %}
+"{{ line[0] }}"   {{ line[1] }}
+{% endfor %}

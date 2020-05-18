@@ -1,3 +1,6 @@
+---
+# Tasks only to be exectuted on a host running a gplazma cell
+
 - name: install gplazma.conf
   template:
     src: gplazma.conf.j2
@@ -6,7 +9,16 @@
     owner: root
     group: root
     mode: 0644
-#  when: _dcache_have_gplazma
+
+- name: install grid-mapfile
+  template:
+    src: grid-mapfile.j2
+    dest: /etc/grid-security/grid-mapfile
+    backup: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: dcache_grid_mapfile is defined
 
 - name: install grid-vorolemap
   template:
@@ -16,8 +28,7 @@
     owner: root
     group: root
     mode: 0644
-  when: dcache_deploy_vorolemap
-  #when: dcache_deploy_vorolemap and _dcache_have_gplazma
+  when: dcache_vorolemap is defined
     
 - name: install storage-authzdb
   template:
@@ -27,8 +38,7 @@
     owner: root
     group: root
     mode: 0644
-  when: dcache_deploy_authzdb
-  #when: dcache_deploy_authzdb and _dcache_have_gplazma
+  when: dcache_authzdb is defined
 
 - name: install dcache.kpwd
   template:
@@ -38,5 +48,5 @@
     owner: root
     group: root
     mode: 0644
-  when: dcache_deploy_kpwd
+  when: dcache_kpwd is defined
   
