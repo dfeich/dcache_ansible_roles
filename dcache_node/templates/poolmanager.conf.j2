@@ -38,7 +38,7 @@ psu create pgroup {{ vo }}
 {% for host in  _dcache_pooldefs %}
 {%   set shorthost = host | regex_replace('^([^\.]+)\..*', '\\1') %}
 {%   for pool in _dcache_pooldefs[host]['pools'] %}
-{%     set poolname = shorthost + "_" + pool.vo + "_" + (loop.index|string) %}
+{%     set poolname = pool.name | default(shorthost + "_" + pool.vo + "_" + (loop.index|string)) %}
 psu create pool {{ poolname }}
 psu addto pgroup {{ pool.vo }} {{ poolname }}
 {%   endfor %}

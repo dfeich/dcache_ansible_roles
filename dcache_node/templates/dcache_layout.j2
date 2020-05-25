@@ -4,11 +4,12 @@
 {%  set topdir = dcache_pool_def.topdir | default("/pools") %}
 {%  set shorthost = inventory_hostname | regex_replace('^([^\.]+)\..*', '\\1') %}
 {%  for pool in dcache_pool_def.pools %}
-{%    set poolname = shorthost + "_" + pool.vo + "_" + (loop.index|string) %}
+{%    set poolname = pool.name | default(shorthost + "_" + pool.vo + "_" + (loop.index|string)) %}
+{%    set poolpath = pool.path | default(topdir + "/" + poolname) %}
 [{{ poolname }}-poolDomain]
 [{{ poolname }}-poolDomain/pool]
 pool.name={{ poolname }}
-pool.path={{ topdir }}/{{ poolname }}
+pool.path={{ poolpath }}
 {%    if pool.size is defined %}
 pool.size={{ pool.size }}
 {%    endif %}
