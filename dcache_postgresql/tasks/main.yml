@@ -116,7 +116,8 @@
 - name: put dcache mountpoint {{ dcache_fsroot }} in fstab and mount
   mount:
     path: '{{ dcache_fsroot }}'
-    src: 'localhost:{{ dcache_fsroot }}'
+    # TODO: why does only localhost4 work (even when exports file contains localhost)
+    src: 'localhost4:{{ dcache_fsroot }}'
     fstype: nfs
     opts: '{{ dcache_nfs_mountopt }}'
     state: mounted
