@@ -26,7 +26,7 @@
 - name: install dcache package
   yum:
     name: dcache
-    state: present
+    state: latest
     disable_excludes: all
 
 - name: install dcache.conf file
