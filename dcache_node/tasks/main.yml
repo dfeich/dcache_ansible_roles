@@ -32,6 +32,7 @@
 - name: install dcache.conf file
   template:
     src: "dcache.conf.j2"
+    backup: yes
     dest: "/etc/dcache/dcache.conf"
     owner: root
     group: root
@@ -41,6 +42,7 @@
 - name: install layout file for {{ inventory_hostname }}
   template:
     src: dcache_layout.j2
+    backup: yes
     dest: "/etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
     owner: root
     group: root

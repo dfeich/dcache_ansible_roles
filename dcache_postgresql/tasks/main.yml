@@ -18,6 +18,7 @@
   template:
     src: "pg_hba.conf.j2"
     dest: "{{ postgresql_config_path }}/pg_hba.conf"
+    backup: yes
     owner: "{{ postgresql_user }}"
     group: "{{ postgresql_group }}"
     mode: 0600
@@ -28,6 +29,7 @@
   lineinfile:
     dest: "{{ postgresql_config_path }}/postgresql.conf"
     #  if an active directive already exists, replace it
+    backup: yes
     regexp: "^{{ item | regex_replace(' *=.*', '') }} *=.+$"
     #  if not, insert the line before the appropriate comment
     #  directive
@@ -96,6 +98,7 @@
   template:
     src: exports.j2
     dest: /etc/exports
+    backup: yes
     owner: root
     group: root
     mode: 0644
