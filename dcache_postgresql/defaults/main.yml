@@ -11,8 +11,8 @@ postgresql_global_config_options:
   - listen_addresses = '*'
   - effective_cache_size = 4GB
   - fsync = on
-  - maintenance_work_mem = 1000MB	
-  - max_stack_depth = 7680kB	
+  - maintenance_work_mem = 1000MB
+  - max_stack_depth = 7680kB
   - shared_buffers = 950MB
   - syslog_facility = 'LOCAL0'
   - syslog_ident = 'postgres'

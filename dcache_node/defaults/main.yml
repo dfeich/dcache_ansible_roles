@@ -42,7 +42,7 @@ dcache_conf_lines:
   - info-provider.glue-se-status=Production
   - info-provider.http.host={{ dcache_db_head }}
   - info-provider.se-name=SRM endpoint for {{ dcache_site_name }}
-  - info-provider.se-unique-id=t3test-se01.psi.ch
+  - info-provider.se-unique-id={{ dcache_info_provider }}
   - info-provider.site-unique-id={{ dcache_site_name }}
   # globals for: 'poolmanager'
   - poolmanager.enable.cache-hit-message=true

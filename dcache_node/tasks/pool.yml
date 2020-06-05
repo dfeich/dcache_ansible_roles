@@ -7,6 +7,7 @@
     cmd: "sed  -n 's/^pool.path=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
     warn: no
   register: outp_pool_path_list
+  check_mode: no
   changed_when: False
 
 # - name: get list of pool names from layout file
@@ -39,7 +40,7 @@
   loop: '{{ outp_pool_path_list.stdout.split() }}'
 
 # TODO: the current approach only allows having the same setup for all
-#       pools on this host
+#       pools on this host. I need to have this on a per pool level
 - name: place pool setup file if we have setup info
   template:
     src: pool-setup.j2

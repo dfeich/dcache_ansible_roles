@@ -20,6 +20,7 @@
     description: dCache repository (inst by ansible)
     gpgcheck: no
     enabled: yes
+    priority: '1'
     # to prevent inadvertent updates
     exclude: dcache
 

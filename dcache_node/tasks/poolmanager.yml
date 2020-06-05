@@ -5,7 +5,7 @@
     _dcache_pooldefs: >-
       {{ _dcache_pooldefs | default({})
                           | combine({item: hostvars[item]["dcache_pool_def"]}) }}
-  loop: '{{ groups[dcache_inventory_group] }}'
+  loop: '{{ groups["dcache_pools"] }}'
 
 - name: show collected pool definitions
   debug:
@@ -15,7 +15,7 @@
 - name: extract VO list from pool definitions
   set_fact:
     _volist: >-
-      {{ (volist | default([]) +  item.value["pools"]
+      {{ (_volist | default([]) +  item.value["pools"]
           | map(attribute="vo") | list) | unique  }}
   loop: '{{ _dcache_pooldefs | dict2items}}'
 - name: show extracted VO list
