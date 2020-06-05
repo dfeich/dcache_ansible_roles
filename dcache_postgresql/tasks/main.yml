@@ -55,7 +55,7 @@
   postgresql_user:
     name: chimera
     # TODO: use a vault password
-    password: "pw-chimera"
+    password: '{{ dcache_chimeradb_passwd }}'
     role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
   become: true
   # only postgres user is allowed to manage postgres DB with peer setup
@@ -69,7 +69,7 @@
   postgresql_user:
     name: "{{ dcache_db_owner }}"
     # TODO: use a vault password
-    password: "pw-dcache"
+    password: '{{ dcache_chimeradb_passwd }}'
     role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
   become: true
   become_user: "{{ postgresql_user }}"
