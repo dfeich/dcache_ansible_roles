@@ -25,7 +25,7 @@ dcache_conf_lines:
   - dcache.log.level.events=warn
   - dcache.log.level.file=warn
   - dcache.log.level.pinboard=warn
-  - dcache.log.level.remote=off
+  - dcache.log.level.remote=warn
   - dcache.log.mode=new
   - dcache.log.server.host={{ dcache_db_head }}
   - dcache.net.lan.port.max=25000

@@ -31,6 +31,7 @@
     disable_excludes: all
 
 - name: install dcache.conf file
+  tags: conf
   template:
     src: "dcache.conf.j2"
     backup: yes
@@ -41,6 +42,7 @@
   #TODO notify: restart dcache
 
 - name: install layout file for {{ inventory_hostname }}
+  tags: conf
   template:
     src: dcache_layout.j2
     backup: yes

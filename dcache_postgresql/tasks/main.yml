@@ -87,6 +87,11 @@
     name: billing
     owner: "{{ dcache_db_owner }}"
 
+- name: create alarms DB
+  postgresql_db:
+    name: alarms
+    owner: "{{ dcache_db_owner }}"
+
 # only run this once. Place a file to remember.
 # TODO: For this to work, the layout file must contain the cells requiring the DB
 - name: Let dcache initialize its database
