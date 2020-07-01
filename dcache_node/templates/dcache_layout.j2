@@ -1,12 +1,14 @@
 {{ (ansible_managed + " for " + inventory_hostname) | comment }}
 
-{%if dcache_pool_def is defined %}
-# pool.tags=hostname=${host.name}
-pool.plugins.meta=org.dcache.pool.repository.meta.db.BerkeleyDBMetaDataRepository
-# https://github.com/ivukotic/plugins/raw/master/RPMS/noarch/dcache-plugin-xrootd-monitor-7.0.0-0.noarch.rpm
-pool.mover.xrootd.plugins=edu.uchicago.monitor
+{%  if dcache_layout_prolog is defined %}
+{%    for elem in dcache_layout_prolog %}
+{{ elem }}
+{%    endfor %}
+{%  endif %}
 
-dcache.java.options.extra="-d64"
+{%if dcache_pool_def is defined %}
+pool.plugins.meta=org.dcache.pool.repository.meta.db.BerkeleyDBMetaDataRepository
+
 {%  set topdir = dcache_pool_def.topdir | default("/pools") %}
 {%  set shorthost = inventory_hostname | regex_replace('^([^\.]+)\..*', '\\1') %}
 {%  for pool in dcache_pool_def.pools %}
