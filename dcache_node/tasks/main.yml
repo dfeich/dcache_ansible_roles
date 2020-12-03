@@ -24,11 +24,11 @@
     # to prevent inadvertent updates
     exclude: dcache
 
-- name: install dcache package
+- name: "install dcache package dcache-{{ dcache_version }}"
   yum:
-    name: dcache
+    name: "dcache-{{ dcache_version }}"
     state: latest
-    disable_excludes: all
+    disable_excludes: dcache
 
 - name: install dcache.conf file
   tags: conf
