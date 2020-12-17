@@ -78,7 +78,7 @@
                       | selectattr('domain', 'regex','.*gplazma$')
                       | list | length | bool }}
 
-- name: run gplazma taks if we have the gplazma cell
+- name: run gplazma tasks if we have the gplazma cell
   include_tasks: gplazma.yml
   when: _dcache_have_gplazma
 

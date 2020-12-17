@@ -1,7 +1,7 @@
 ---
 # tasks file for roles/dcache_postgresql
 
-# TODO: maybe must make sure that now other node is still trying
+# TODO: maybe must make sure that no other node is still trying
 # to access the DB
 
 - name: Install postgresql packages
