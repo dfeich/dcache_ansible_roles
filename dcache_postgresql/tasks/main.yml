@@ -69,7 +69,7 @@
   postgresql_user:
     name: "{{ dcache_db_owner }}"
     # TODO: use a vault password
-    password: '{{ dcache_chimeradb_passwd }}'
+    password: '{{ dcache_dcachedb_passwd }}'
     role_attr_flags: NOSUPERUSER,NOCREATEROLE,CREATEDB
   become: true
   become_user: "{{ postgresql_user }}"
