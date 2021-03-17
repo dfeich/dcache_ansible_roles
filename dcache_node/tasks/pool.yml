@@ -1,6 +1,8 @@
 ---
 # TODO: there should be a better parsing of the layout file into a json/yaml
 #       structure. We should collect all settings in one data structure.
+# TODO: I should decide whether the local layout file should be the authoritative
+#       source of information, or rather the yaml definitions.
 
 - name: get list of pool paths from layout file
   shell:
@@ -9,17 +11,6 @@
   register: outp_pool_path_list
   check_mode: no
   changed_when: False
-
-# - name: get list of pool names from layout file
-#   shell:
-#     cmd: "sed  -n 's/^pool.name=//p' /etc/dcache/layouts/{{ inventory_hostname | regex_replace('([^\\.]+).*', '\\1') }}.conf"
-#     warn: no
-#   register: outp_pool_name_list
-#   changed_when: False
-
-# - name: zip poolnames and paths to obtain a poolname:path dict
-#   set_fact:
-#     _poolname_path_map: '{{ dict(outp_pool_name_list.stdout.split() | zip(outp_pool_path_list.stdout.split()))}}'
 
 - name: create pool directories for pools found in layout file
   file:
@@ -39,6 +30,27 @@
     mode: 0755
   loop: '{{ outp_pool_path_list.stdout.split() }}'
 
+- name: Create meta direcory for linking if "linkmeta" configured
+  file:
+    state: directory
+    path: '{{ item["linkmeta"] }}'
+    owner: dcache
+    group: dcache
+    mode: 0755
+  loop: '{{ dcache_pool_def["pools"] }}'
+  when: item["linkmeta"] is defined
+
+- name: Symlinking pools' meta direcory if "linkmeta" configured
+  file:
+    state: link
+    src: '{{ item["linkmeta"] }}'
+    dest: '{{ item["path"] }}/meta'
+    follow: no
+    owner: dcache
+    group: dcache
+  loop: '{{ dcache_pool_def["pools"] }}'
+  when: item["linkmeta"] is defined
+  
 # TODO: the current approach only allows having the same setup for all
 #       pools on this host. I need to have this on a per pool level
 - name: place pool setup file if we have setup info
