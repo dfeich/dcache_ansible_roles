@@ -40,6 +40,11 @@ psu create pgroup {{ vo }}
 {%   for pool in _dcache_pooldefs[host]['pools'] %}
 {%     set poolname = pool.name | default(shorthost + "_" + pool.vo + "_" + (loop.index|string)) %}
 psu create pool {{ poolname }}
+{%     if pool.rdonly is defined %}
+{%       if pool.rdonly == 'true' %}
+psu set pool {{ poolname }} rdonly
+{%       endif %}
+{%     endif %}
 psu addto pgroup {{ pool.vo }} {{ poolname }}
 {%   endfor %}
 

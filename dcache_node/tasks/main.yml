@@ -106,6 +106,7 @@
   when: dcache_pool_def is defined
     
 - name: set a fact if this host is running a poolmanager cell
+  tags: poolmanager
   set_fact:
     _dcache_have_poolmanager: >-
       {{ dcache_layout| default([])
@@ -115,7 +116,11 @@
                       | list | length | bool }}
 
 - name: Run poolmanager tasks if this host has the poolmanager cell
-  include_tasks: poolmanager.yml
+  tags: poolmanager
+  include_tasks:
+    file: poolmanager.yml
+    apply:
+      tags: poolmanager
   when: _dcache_have_poolmanager
 
 - name: create /etc/grid-security dir
