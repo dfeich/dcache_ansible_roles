@@ -64,3 +64,7 @@
   when: dcache_pool_setup is defined
   loop: '{{ outp_pool_path_list.stdout.split() }}'
   
+- name: install uchicago xrootd monitoring plugin
+  yum:
+    name: https://github.com/ivukotic/plugins/raw/master/RPMS/noarch/dcache-plugin-xrootd-monitor-7.0.0-0.noarch.rpm
+    
