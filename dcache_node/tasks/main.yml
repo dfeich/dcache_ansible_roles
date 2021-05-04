@@ -133,7 +133,7 @@
 
 - name: install grid hostcert if defined
   copy:
-    src: '{{ dcache_hostcert }}'
+    src: '{{ files_path_prefix }}{{ dcache_hostcert }}'
     dest: /etc/grid-security/hostcert.pem
     backup: yes
     owner: dcache
@@ -143,7 +143,7 @@
 
 - name: install grid hostkey if defined
   copy:
-    src: '{{ dcache_hostkey }}'
+    src: '{{ files_path_prefix }}{{ dcache_hostkey }}'
     dest: /etc/grid-security/hostkey.pem
     backup: yes
     owner: dcache
