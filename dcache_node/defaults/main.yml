@@ -1,6 +1,8 @@
 ---
 # defaults file for roles/dcache_node
 
+dcache_use_systemd: True
+
 dcache_conf_lines:
   # values for Storage Accounting Records (StAR)
   - chimera.db.host={{ dcache_db_head }}
