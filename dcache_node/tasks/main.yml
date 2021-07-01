@@ -13,6 +13,7 @@
     - zookeeper_connections
     
 - name: install our T3 dcache yum repo
+  tags: repo
   yum_repository:
     baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
     # name is the section name of the repo
@@ -52,6 +53,7 @@
     mode: 0644
 
 - name: set a fact if this host is running an admin cell
+  tags: always
   set_fact:
     _dcache_have_admin: >-
       {{ dcache_layout| default([])
@@ -70,6 +72,7 @@
   when: _dcache_have_admin
 
 - name: set a fact if this host is running a gplazma cell
+  tags: always
   set_fact:
     _dcache_have_gplazma: >-
       {{ dcache_layout| default([])
@@ -79,10 +82,12 @@
                       | list | length | bool }}
 
 - name: run gplazma tasks if we have the gplazma cell
+  tags: conf
   include_tasks: gplazma.yml
   when: _dcache_have_gplazma
 
 - name: set a fact if this host is running an spacemanager cell
+  tags: always
   set_fact:
     _dcache_have_spacemanager: >-
       {{ dcache_layout| default([])
@@ -106,6 +111,7 @@
   when: dcache_pool_def is defined
     
 - name: set a fact if this host is running a poolmanager cell
+  tags: always
   tags: poolmanager
   set_fact:
     _dcache_have_poolmanager: >-

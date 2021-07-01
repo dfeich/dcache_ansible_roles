@@ -2,6 +2,7 @@
 # Tasks only to be exectuted on a host running a gplazma cell
 
 - name: install gplazma.conf
+  tags: conf
   template:
     src: gplazma.conf.j2
     dest: /etc/dcache/gplazma.conf
@@ -21,6 +22,7 @@
   when: dcache_grid_mapfile is defined
 
 - name: install grid-vorolemap
+  tags: conf
   template:
     src: grid-vorolemap.j2
     dest: /etc/grid-security/grid-vorolemap
@@ -31,6 +33,7 @@
   when: dcache_vorolemap is defined
     
 - name: install storage-authzdb
+  tags: conf
   template:
     src: storage-authzdb.j2
     dest: /etc/grid-security/storage-authzdb
