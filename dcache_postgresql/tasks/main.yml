@@ -95,11 +95,12 @@
 # only run this once. Place a file to remember.
 # TODO: For this to work, the layout file must contain the cells requiring the DB
 - name: Let dcache initialize its database
-  shell: "dcache database update && touch {{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
+  shell: "dcache database update && touch {{ postgresql_config_path }}/ANSIBLE_DCACHE_INITIALIZED_OK"
   args:
-    creates: "{{ postgresql_config_path }}/DCACHE_INITIALIZED_OK"
+    creates: "{{ postgresql_config_path }}/ANSIBLE_DCACHE_INITIALIZED_OK"
 
 - name: install the exports file
+  tags: conf
   template:
     src: exports.j2
     dest: /etc/exports
