@@ -40,6 +40,7 @@
   notify: restart postgresql
 
 - name: Ensure postgres is started and enabled at boot
+  tags: start
   service:
     name: "{{ postgresql_service }}"
     state: started
@@ -109,8 +110,16 @@
     group: root
     mode: 0644
 
-- name: Start dcache so we have the NFS namespace available
+- name: Start dcache so we have the NFS namespace available (SysV) 
   shell: "/usr/bin/dcache start"
+  when: not dcache_use_systemd
+- name: Start dcache so we have the NFS namespace available (systemd)
+  systemd:
+    name: dcache.target
+    daemon-reload: yes
+    enabled: no
+    state: started
+  when: dcache_use_systemd
   # TODO: correct setting of when_changed. Maybe implement
   #       a test for dcache running or use a handler
 
