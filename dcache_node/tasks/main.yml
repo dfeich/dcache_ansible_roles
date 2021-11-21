@@ -112,7 +112,6 @@
     
 - name: set a fact if this host is running a poolmanager cell
   tags: always
-  tags: poolmanager
   set_fact:
     _dcache_have_poolmanager: >-
       {{ dcache_layout| default([])
