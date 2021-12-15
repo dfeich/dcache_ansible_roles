@@ -156,6 +156,17 @@
     mode: 0400
   when: dcache_hostkey is defined
 
+- name: install dcache systemd status helper script
+  tags: conf
+  copy:
+    src: 'dcache-status'
+    dest: /usr/sbin/dcache-status
+    backup: no
+    owner: dcache
+    group: root
+    mode: 0755
+  when: dcache_use_systemd
+    
 # # TODO: the way of starting/restarting needs to be revised
 #   also, whether this is the right place to start services
 # - name: Start dcache on this node

@@ -1,0 +1,6 @@
+#!/bin/bash
+# Deployed by Ansible
+for svc in $(systemctl list-dependencies --plain dcache.target | grep -v .target); do
+    echo -n "$svc "
+    systemctl is-active $svc
+done
