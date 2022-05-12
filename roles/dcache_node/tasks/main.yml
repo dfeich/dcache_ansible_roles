@@ -15,7 +15,7 @@
 - name: install our T3 dcache yum repo
   tags: repo
   yum_repository:
-    baseurl: http://linux.web.psi.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
+    baseurl: "{{ dcache_repo_url }}"
     # name is the section name of the repo
     name: dcache
     description: dCache repository (inst by ansible)
