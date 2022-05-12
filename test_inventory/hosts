@@ -1,0 +1,49 @@
+#   T3 TEST CLUSTER
+#################################
+
+[all:vars]
+# introduce a var to implement our files/inventoryname structure
+files_path_prefix='files/{{ inventory_dir | basename }}/'
+
+[ui]
+test-ui01.somedomain.ch
+
+[wn]
+test-wn01.somedomain.ch
+
+[zookeeper]
+test-zkpr01.somedomain.ch
+
+[dcache_db]
+# must consist of only a single node
+test-dcachedb01.somedomain.ch
+
+[dcache_services]
+test-se01.somedomain.ch
+
+[dcache_pools]
+test-pool01.somedomain.ch
+test-pool02.somedomain.ch
+
+[dcache_nfs_rwclients]
+test-ui01.somedomain.ch
+
+[dcache_nfs_roclients]
+test-wn01.somedomain.ch
+
+[dcache_nfs_clients:children]
+dcache_nfs_rwclients
+dcache_nfs_roclients
+
+# combine groups into the dcache group for being able to supply
+# all dcache system member hosts with the same variables
+[dcache:children]
+dcache_db
+dcache_services
+dcache_pools
+dcache_nfs_clients
+
+# for some tasks only to be done on the test system inventory
+[testdcache:children]
+dcache
+

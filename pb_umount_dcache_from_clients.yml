@@ -1,0 +1,28 @@
+---
+- hosts: dcache_nfs_rwclients
+  name: unmount dcache from RW client nodes
+  gather_facts: no
+  tasks:
+    - name: unmount dcache NFS {{ dcache_db_head }}:{{ dcache_fsroot }} on RW clients
+      mount:
+        path: '{{ dcache_fsroot }}'
+        src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: 'rw,{{ dcache_nfs_mountopt }}'
+        state: unmounted
+        boot: no
+
+- hosts: dcache_nfs_roclients
+  name: unmount dcache from RO client nodes
+  gather_facts: no
+  tasks:
+    - name: unmount dcache NFS {{ dcache_db_head }}:{{ dcache_fsroot }} on RO clients
+      mount:
+        path: '{{ dcache_fsroot }}'
+        src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: 'ro,{{ dcache_nfs_mountopt }}'
+        state: unmounted
+        boot: no
+
+

@@ -1,0 +1,87 @@
+---
+#
+dcache_layout:
+  - domain: dcache-${host.name}Domain
+    attr:
+      - dcache.broker.scheme: core
+  - domain: dcache-${host.name}Domain/poolmanager
+  - domain: dcache-${host.name}Domain/topo
+
+  - domain: dcap-${host.name}Domain
+  - domain: dcap-${host.name}Domain/dcap
+    attr:
+      - dcap.authz.anonymous-operations: READONLY
+
+  - domain: gsidcap-${host.name}Domain
+  - domain: gsidcap-${host.name}Domain/dcap
+    attr:
+      - dcap.authn.protocol: gsi
+
+  - domain: gsiftp-${host.name}Domain
+  - domain: gsiftp-${host.name}Domain/ftp
+    attr:
+      - ftp.authn.protocol: gsi
+      - ftp.enable.overwrite: "false"
+      - ftp.limits.clients: 1000
+      - ftp.mover.queue: wan
+
+  - domain: info-${host.name}Domain
+  - domain: info-${host.name}Domain/info
+
+  - domain: pinmanager-${host.name}Domain
+  - domain: pinmanager-${host.name}Domain/pinmanager
+    attr:
+      - pinmanager.db.host: '{{ dcache_db_head }}'
+      - pinmanager.db.name: dcache
+      - pinmanager.db.user: '{{ dcache_db_owner }}'
+
+  - domain: spacemanager-${host.name}Domain
+  - domain: spacemanager-${host.name}Domain/spacemanager
+    attr:
+      - spacemanager.authz.link-group-file-name: /etc/dcache/LinkGroupAuthorization.conf
+      - spacemanager.db.host: '{{ dcache_db_head }}'
+      - spacemanager.db.name: dcache
+      - spacemanager.db.user: '{{ dcache_db_owner }}'
+      - spacemanager.enable.unreserved-uploads-to-linkgroups: "true"
+
+  - domain: srm-${host.name}Domain
+  # srm and spacemanager splitted in two domains
+  - domain: srm-${host.name}Domain/srm
+  - domain: srm-${host.name}Domain/srmmanager
+    attr:
+      - srmmanager.db.host: '{{ dcache_db_head }}'
+      - srmmanager.db.name: dcache
+      - srmmanager.db.user: '{{ dcache_db_owner }}'
+      - srmmanager.enable.overwrite: "false"
+      - srmmanager.limits.ls.entries: 20000
+      - srmmanager.persistence.enable.history: "true"
+      - srmmanager.request.copy.max-inprogress: 100
+      - srmmanager.request.get.max-inprogress: 100
+      - srmmanager.request.max-requests: 400
+      - srmmanager.request.max-transfers: 100
+      - srmmanager.request.put.max-requests: 100
+
+  - domain: transfermanagers-${host.name}Domain
+  - domain: transfermanagers-${host.name}Domain/transfermanagers
+    attr: 
+      - transfermanagers.db.host: '{{ dcache_db_head }}'
+      - transfermanagers.db.name: dcache
+      - transfermanagers.db.user: '{{ dcache_db_owner }}'
+      - transfermanagers.enable.db: "true"
+
+  # - domain: xrootd-${host.name}Domain
+  # - domain: xrootd-${host.name}Domain/xrootd
+  #   attr:
+  #     - xrootd.authz.write-paths: /
+  #     - xrootd.cms.tfc.path: /etc/xrootd/storage.xml
+  #     - xrootd.cms.tfc.protocol: direct
+  #     - xrootd.limits.threads: 160
+  #     - xrootd.mover.queue: xrdwan
+  #     - xrootd.mover.timeout: 28800000
+  #     - xrootd.plugins: gplazma:gsi,authz:cms-tfc
+  #     - xrootd.service.pool.timeout: 28800000
+  
+
+dcache_hostcert: '{{ inventory_hostname }}-cert.pem'
+dcache_hostkey: '{{ inventory_hostname }}-key.pem'
+

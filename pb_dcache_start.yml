@@ -1,0 +1,98 @@
+# TODO: unmount nfs4 from all clients before shutting down the exports
+#      db host may need special treatment, since it mounts from localhost
+# - name: put dcache mountpoint {{ dcache_fsroot }} in fstab and mount
+#   mount:
+#     path: '{{ dcache_fsroot }}'
+#     src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+#     fstype: nfs
+#     opts: '{{ dcache_nfs_mountopt }}'
+#     state: unmounted
+#     boot: no
+
+- hosts: dcache_db
+  gather_facts: no
+  tasks:
+    # TODO: maybe even test for zookeeper?
+    - name: include vars of dcache_postgres role
+      include_vars: roles/dcache_postgresql/vars/main.yml
+    - name: Ensure postgres is started
+      service:
+        name: "{{ postgresql_service }}"
+        state: started
+    - name: Start dcache SysV services 
+      shell: "/usr/bin/dcache start"
+      when: not dcache_use_systemd
+    - name: Start dcache systemd services
+      systemd:
+        name: dcache.target
+        daemon-reload: yes
+        enabled: no
+        state: started
+      when: dcache_use_systemd
+    - name: put dcache mountpoint {{ dcache_fsroot }} in fstab and mount (can take 30s)
+      mount:
+        path: '{{ dcache_fsroot }}'
+        # TODO: why does only localhost4 work (even when exports file contains localhost)
+        src: 'localhost4:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: '{{ dcache_nfs_mountopt }}'
+        state: mounted
+        boot: no
+
+        
+- hosts: dcache_services
+  gather_facts: no
+  tasks:
+    # at least for the SRM node having access to the mounted file system
+    # is essential
+    - name: mount RO dcache NFS {{ dcache_db_head }}:{{ dcache_fsroot }} on service node
+      mount:
+        path: '{{ dcache_fsroot }}'
+        src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: 'ro,{{ dcache_nfs_mountopt }}'
+        state: mounted
+        boot: no
+    - name: Start dcache SysV services 
+      shell: "/usr/bin/dcache start"
+      when: not dcache_use_systemd
+    - name: Start dcache systemd services
+      systemd:
+        name: dcache.target
+        daemon-reload: yes
+        enabled: no
+        state: started
+      when: dcache_use_systemd
+    
+- hosts: dcache_pools
+  gather_facts: no
+  tasks:
+    - name: Start dcache SysV services
+      shell: "/usr/bin/dcache start"
+      when: not dcache_use_systemd
+    - name: Start dcache systemd services
+      systemd:
+        name: dcache.target
+        daemon-reload: yes
+        enabled: no
+        state: started
+      when: dcache_use_systemd
+
+- hosts: xrootfed
+  gather_facts: no
+  tasks:
+    - name: Start xrootd federation services
+      systemd:
+        name: xrootd@clustered.service
+        daemon-reload: yes
+        enabled: no
+        state: started
+    - name: Start cmsd federation services
+      systemd:
+        name: cmsd@clustered.service
+        daemon-reload: yes
+        enabled: no
+        state: started
+    
+        
+- import_playbook: pb_mount_dcache_on_clients.yml

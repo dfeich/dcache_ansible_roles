@@ -1,0 +1,200 @@
+---
+# group_vars for testdcache group
+# all dcache nodes of the system will get these variables
+
+# Essential variables that do not have defaults specified in the roles
+dcache_version: 6.2.40
+dcache_repo_url: http://SOMESERVER.somedomain.ch/dist/scientificlinux/7x/x86_64/tier3/dcache
+dcache_use_systemd: True
+dcache_db_head: test-dcachedb01.somedomain.ch
+dcache_db_owner: dcache
+dcache_srm_door: test-se01.somedomain.ch
+dcache_info_provider: test-se01.somedomain.ch
+# for a test site, I only use a single zookeeper node
+zookeeper_connections:
+  - test-zkpr01.somedomain.ch:2181
+  # - test-zkpr02.somedomain.ch:2181
+  # - test-zkpr03.somedomain.ch:2181
+
+# Create a separate vault file that defines the source variables
+# for these definitions
+dcache_chimeradb_passwd: "{{ vlt_dcache_chimeradb_passwd }}"
+dcache_dcachedb_passwd: "{{ vlt_dcache_dcachedb_passwd }}"
+  
+# root directory to create in the chimera namespace and also
+# the mountpoint for importing on clients
+dcache_fsroot: "/data"
+
+dcache_conf_lines:
+  # values for Storage Accounting Records (StAR)
+  - chimera.db.host={{ dcache_db_head }}
+  - star.gid-mapping = {{ dcache_site_gid_mapping | join(',') }}
+  - "# values for CRIC/SRR (storage resource reporting)"
+  - storage-descriptor.name = {{ dcache_site_name }}
+  - storage-descriptor.unique-id = {{ dcache_srm_door }}
+  # globals for: 'billing'
+  - billing.db.host={{ dcache_db_head }}
+  - billing.db.name=billing
+  - billing.db.user={{ dcache_db_owner }}
+  # globals for: 'chimera'
+  - chimera.db.name=chimera
+  - chimera.db.url=jdbc:postgresql://{{ dcache_db_head }}/chimera?prepareThreshold=3
+  - chimera.db.user=chimera
+  # globals for: 'dcache'
+  #dcache.broker.scheme=satellite
+  - dcache.enable.space-reservation=true
+  - dcache.java.memory.direct=4096m
+  - dcache.java.memory.heap=4096m
+  # we want log destination to files, not to journald
+  - dcache.log.destination=file
+  - dcache.log.level.access=warn
+  - dcache.log.level.events=warn
+  - dcache.log.level.file=warn
+  - dcache.log.level.pinboard=warn
+  - dcache.log.level.remote=warn
+  - dcache.log.mode=new
+  - dcache.log.server.host={{ dcache_db_head }}
+  - dcache.net.lan.port.max=25000
+  - dcache.net.lan.port.min=20000
+  - dcache.paths.billing=/var/log/dcache
+  - dcache.zookeeper.connection={{ zookeeper_connections|join(',') }}
+  # globals for: 'ftp'
+  - ftp.mover.queue=ftp
+  # globals for: 'httpd'
+  # httpd.enable.plots.pool-queue=true
+  # globals for: 'info-provider'
+  - info-provider.dcache-architecture=multidisk
+  - info-provider.dcache-quality-level=production
+  - info-provider.glue-se-status=Production
+  - info-provider.http.host={{ dcache_db_head }}
+  - info-provider.se-name=SRM endpoint for {{ dcache_site_name }}
+  - info-provider.se-unique-id={{ dcache_info_provider }}
+  - info-provider.site-unique-id={{ dcache_site_name }}
+  # globals for: 'poolmanager'
+  - poolmanager.enable.cache-hit-message=true
+
+
+dcache_dirstruct:
+  - ['/data/cms',                 cmsstoradm, cms, '0755'] 
+  - ['/data/cms/tests',           cmsstoradm, cms, '0775'] 
+  - ['/data/cms/store',           cmsops, cms, '0755'] 
+  - ['/data/cms/store/user',      cmsstoradm, cms, '0755']
+  - ['/data/cms/store/temp/',     cmsops, cms, '0755']
+  - ['/data/cms/store/temp/user', cmsops, cms, '1777']
+
+#dcache_nfs_mountopt: "vers=3,_netdev"
+dcache_nfs_mountopt: "_netdev"
+
+admin_authorized_keys_file: authorized_keys2
+  
+dcache_site_name: T3_CH_PSI_test
+
+dcache_linkgrp_authz:
+  cms:
+    - /cms
+  ops:
+    - /ops/NGI/Germany*
+    - /ops/NGI/Switzerland*
+    - /ops*
+
+# main use is for protocols which only need to authorize based on a certificate DN, i.e. lacking any
+# VOMS information.
+dcache_grid_mapfile:
+  - ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=dfeich/CN=613756/CN=Derek Feichtinger", feichtinger]
+  - ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=mcaubet/CN=683405/CN=Marc Caubet Serrabou", caubet_m]
+
+dcache_vorolemap:
+  - ["*", "/cms/Role=production", cmsops]
+  - ["*", "/cms/chcms/Role=Group-Manager", cmsstoradm]
+  - ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=dfeich/CN=613756/CN=Derek Feichtinger","/cms",feichtinger]
+  - ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=mcaubet/CN=683405/CN=Marc Caubet Serrabou","/cms", caubet_m]
+  - ["/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=cmsrucio/CN=779320/CN=Robot", "/cms", cmsops]
+  - ["*", "/cms/chcms", chcmsuser]
+  - ["*", "/cms", cmsuser]
+  # OPS
+  - ["*", "/ops", opsuser]
+  # - ["*", "/ops/Role=lcgadmin",    opsuser]
+
+  
+dcache_authzdb:
+  authorize:
+    # cmstoradm is part of the cmsadmin 503 group that permits r/w everywhere via ACLs
+    - [cmsstoradm, read-write, 10503, "10500,10503", "/", "/", "/"]
+    - [feichtinger, read-write, 9001, "10500,10999", "/", "/", "/"]
+    - [caubet_m, read-write, 9002, "10500,10999", "/", "/", "/"]
+    - [cmsops, read-write, 10500, 10500, "/", "/", "/"]
+    - [chcmsuser, read-write, 10504, "10504,10500", "/", "/", "/"]
+    - [cmsuser, read-write, 10501, 10500, "/", "/", "/"]
+
+dcache_kpwd:
+  passwd:
+    - [feichtinger, abcdefgh, read-write, 9001, "10500,999", "/", "/"]
+    - [caubet_m, ihgfdjkl, read-write, 9002, "10500,999", "/", "/"]
+
+    
+# TODO: correct group IDs
+dcache_site_gid_mapping:
+  - 10500=/cms
+  - 10600=/ops
+
+# Database related entries
+postgresql_hba_entries:
+  - {type: local, database: all, user: postgres, auth_method: trust}
+  - {type: local, database: all, user: all, auth_method: trust}
+  - {type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: trust}
+  - {type: host, database: all, user: all, address: '::1/128', auth_method: trust}
+  #
+  - {type: local, database: replication, user: all, auth_method: trust}
+  - {type: host, database: replication, user: all, address: 127.0.0.1/32, auth_method: trust}
+  - {type: host, database: replication, user: all, address: '::1/128', auth_method: trust}
+  # access to dcache from all nodes in the subnet (TODO: is this really needed????)
+  - {type: host, database: dcache, user: "{{ dcache_db_owner }}", address: 192.168.123.62/24, auth_method: trust}
+  # access to these dbs only from dcache service member nodes
+  #                      db 192.168.123.62
+  - {type: host, database: billing, user: "{{ dcache_db_owner }}", address: 192.168.123.62/32, auth_method: trust}
+  - {type: host, database: alarms, user: "{{ dcache_db_owner }}", address: 192.168.123.62/32, auth_method: trust}
+  - {type: host, database: companion, user: "{{ dcache_db_owner }}", address: 192.168.123.62/32, auth_method: trust}
+  #                      se 192.168.123.61
+  - {type: host, database: billing, user: "{{ dcache_db_owner }}", address: 192.168.123.61/32, auth_method: trust}
+  - {type: host, database: alarms, user: "{{ dcache_db_owner }}", address: 192.168.123.61/32, auth_method: trust}
+  - {type: host, database: companion, user: "{{ dcache_db_owner }}", address: 192.168.123.61/32, auth_method: trust}
+  # access to Chimera only from DB node
+  - {type: host, database: chimera, user: chimera, address: 192.168.123.62/32, auth_method: trust}
+
+dcache_db_exports:
+  - "{{ dcache_fsroot }}            localhost4(rw,acl,no_root_squash)"
+  - "{{ dcache_fsroot }}            test-se01.somedomain.ch(ro,acl,no_root_squash)"
+  - "{{ dcache_fsroot }}            test-ui01.somedomain.ch(rw,acl,no_root_squash)"
+  - "{{ dcache_fsroot }}/somedomain.ch/cms t3ui*.somedomain.ch(ro,acl,no_root_squash)"
+  - "{{ dcache_fsroot }}/somedomain.ch/cms t3wn*.somedomain.ch(ro,acl,no_root_squash)"
+  - "{{ dcache_fsroot }}/somedomain.ch/cms t3gpu*.somedomain.ch(ro,acl,no_root_squash)"
+
+
+dcache_gplazma_conf:
+  - '############ AUTH'
+  - auth    optional  x509
+  - auth    optional  voms
+  - '#                   kpwd used for password based access for dcache-view admin view'
+  - auth    optional  kpwd
+  - '############ MAPPING'
+  - map     optional  vorolemap
+  - map     sufficient authzdb
+  - '#                  gridmap for webdav/dcache-view mapping of x509 DN to users'
+  - map     optional  gridmap
+  - map     sufficient authzdb
+  - map     requisite kpwd
+  - '############ SESSION'
+  - '#                   roles for allowing admin role dcache-view access'
+  - session requisite roles
+  - session optional kpwd
+  - session requisite authzdb
+
+
+# Definitions needed for test dcache deployment using a test CA for
+# the wlcg_security_infra role
+test_ca_rpm: 'globus-simple-ca-0e00b1a0-1.0-1.el7.noarch.rpm'
+# SSL hashes (in new and old format for compatibility reasons)
+test_ca_newhash: 0e00b1a0
+test_ca_oldhash: 3a7ee4ab
+
+  

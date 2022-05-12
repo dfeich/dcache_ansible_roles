@@ -1,0 +1,36 @@
+---
+
+- name: get number of running dcache Domains
+  shell:
+    # note the ":" at the end in order to get 0 return code even if service
+    # is not running
+    cmd: 'for svc in $(systemctl list-dependencies --plain dcache.target | grep -v .target); do echo -n "$svc "; systemctl is-active $svc; done; :'
+  check_mode: no
+  register: cmd_dcache_running
+  changed_when: false
+
+- name: Show running cells
+  debug:
+    msg: "{{ cmd_dcache_running.stdout.split('\n') }}"
+  when: '"active" in cmd_dcache_running.stdout'
+
+- name: Shut down dcache Domains
+  systemd:
+    name: dcache.target
+    state: stopped
+
+# TODO: the stopping may take some time, but the systemd stop command
+#       returns at once. So dcache may seem to be active even though it
+#       is shutting down.
+- name: get number of still running dcache domains
+  shell:
+    # note the ":" at the end in order to get 0 return code even if service
+    # is not running
+    cmd: 'sleep 4; for svc in $(systemctl list-dependencies --plain dcache.target | grep -v .target); do echo -n "$svc "; systemctl is-active $svc; done; :'
+  check_mode: no
+  register: cmd_dcache_running_still
+  changed_when: false
+
+- name: assert that no dcache domain is still running
+  assert:
+    that: '"active" not in cmd_dcache_running_still.stdout'

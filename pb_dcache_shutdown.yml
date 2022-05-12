@@ -1,0 +1,63 @@
+# TODO: unmount nfs4 from all clients before shutting down the exports
+#      db host may need special treatment, since it mounts from localhost
+# - name: put dcache mountpoint {{ dcache_fsroot }} in fstab and mount
+#   mount:
+#     path: '{{ dcache_fsroot }}'
+#     src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+#     fstype: nfs
+#     opts: '{{ dcache_nfs_mountopt }}'
+#     state: unmounted
+#     boot: no
+
+- hosts: dcache_nfs_clients
+  gather_facts: no
+  name: disable dcache clients from accessing dcache services
+  tasks:
+    - name: unmount dcache NFS mountpoint {{ dcache_db_head }}:{{ dcache_fsroot }}
+      mount:
+        path: '{{ dcache_fsroot }}'
+        src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: '{{ dcache_nfs_mountopt }}'
+        state: unmounted
+        boot: no
+
+- hosts: [dcache_pools, dcache_services]
+  name: Stop all dcache services on pools and the service nodes
+  gather_facts: no
+  tasks:
+    - name: include SysV service shutdown
+      include: _dcache_shutdown_sysv.yml
+      when: not dcache_use_systemd
+    - name: include systemd service shutdown
+      include: _dcache_shutdown_systemd.yml
+      when: dcache_use_systemd
+    - name: unmount dcache NFS mountpoint {{ dcache_db_head }}:{{ dcache_fsroot }}
+      mount:
+        path: '{{ dcache_fsroot }}'
+        src: '{{ dcache_db_head }}:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: '{{ dcache_nfs_mountopt }}'
+        state: unmounted
+        boot: no
+        
+        
+- hosts: dcache_db
+  name: stop dcache services on dcache DB server
+  gather_facts: no
+  tasks:
+    - name: unmount dcache NFS mountpoint localhost:{{ dcache_fsroot }}
+      mount:
+        path: '{{ dcache_fsroot }}'
+        src: 'localhost:{{ dcache_fsroot }}'
+        fstype: nfs
+        opts: '{{ dcache_nfs_mountopt }}'
+        state: unmounted
+        boot: no    
+    - name: include SysV service shutdown
+      include: _dcache_shutdown_sysv.yml
+      when: not dcache_use_systemd
+    - name: include systemd service shutdown
+      include: _dcache_shutdown_systemd.yml
+      when: dcache_use_systemd
+        

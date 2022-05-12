@@ -1,0 +1,32 @@
+* ansible roles for installing a dCache storage service
+
+  These dcache roles allow the complete installation of a [[https://www.dcache.org/][dCache]]
+  service with all of its cells. They allow flexibly distributing
+  cells over different hosts.
+
+  I also add some example playbooks using these roles, and an example
+  inventory. Actually, I think without an example inventory it would
+  not be very clear how to organize the services.
+
+  I've been using this code for managing my production and test site
+  for multiple years. I hope it will be useful to others.
+  
+** install a full dCache test or production system
+
+   #+begin_src bash
+     ansible-playbook -D -i inventory dcache_install.yml
+
+     # Only do DB installation tasks
+     ansible-playbook -D -i inventory_t3test dcache_install.yml --tags db
+   #+END_SRC
+
+   Only do the DB installation tasks
+   #+begin_src bash
+     ansible-playbook -D -i inventory_t3test dcache_install.yml --tags db
+   #+END_SRC
+   
+   Just update configuration files (tag: conf) and only on the
+   test-dcachedb01.psi.ch test host
+   #+begin_src bash
+     ansible-playbook -D -i inventory_t3test dcache_install.yml --tags conf --limit test-dcachedb01.psi.ch
+   #+end_src

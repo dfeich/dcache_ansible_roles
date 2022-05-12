@@ -1,0 +1,60 @@
+---
+- hosts: all
+  tags:
+    - vardebug
+    # tag defininiton for running this never except if tag is explicitely given
+    - never
+  name: Debug Task for showing all variables
+  tasks:
+    - name: Show all variables
+      debug:
+        # verbosity: 3
+        var: hostvars[inventory_hostname]
+
+- hosts: xrd_fed_host
+  name: install xrootd federation instance
+  become: yes
+  become_method: sudo
+  become_user: root
+  vars:
+    tfcrpm: '/root/xrootd-cmstfc-1.5.2-1.el7.x86_64.rpm'
+  tasks:
+    - name: defining files directory for this host
+      set_fact:
+        _myfile_dir: 'files/{{ inventory_dir | basename }}/{{ inventory_hostname_short }}'
+        
+    - name: Show file source location
+      debug:
+        var: _myfile_dir
+        
+    - name: install xrootd-server and dependencies
+      yum:
+        name: xrootd-server
+        state: latest
+        
+    - name: create /var/run/xrootd (missing from RPM)
+      file:
+        state: directory
+        path: /var/run/xrootd
+        owner: xrootd
+        group: xrootd
+        mode: 0700
+        
+    - name: copy xrootd-cmstfc RPM to target host
+      copy:
+        src: '{{ _myfile_dir }}/xrootd-cmstfc-1.5.2-1.el7.x86_64.rpm'
+        dest: '{{ tfcrpm }}'
+        
+    - name: install xrootd-cmstfc plugin RPM
+      yum:
+        name: '{{ tfcrpm }}'
+        state: present
+        
+    - name: install xrootd configuration
+      copy:
+        src: '{{ _myfile_dir }}/xrootd-clustered.cfg'
+        dest: /etc/xrootd/xrootd-clustered.cfg
+        owner: xrootd
+        group: xrootd
+        mode: 0644
+        

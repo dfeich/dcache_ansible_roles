@@ -1,0 +1,48 @@
+dcache_layout_prolog:
+  - '# pool.tags=hostname=${host.name}'
+  - '# https://github.com/ivukotic/plugins/raw/master/RPMS/noarch/dcache-plugin-xrootd-monitor-7.0.0-0.noarch.rpm'
+  - '# pool.mover.xrootd.plugins=edu.uchicago.monitor'
+
+dcache_pool_def:
+  # topdir is used, if a pool has no path defined
+  topdir: /pools
+  pools:
+    - vo: cms
+      size: 2G
+      gap: 0.2G
+      #path:
+        #gap:
+    - vo: cms
+      size: 1G
+      gap: 0.2G
+    - vo: ops
+      size: 0.5G
+      gap: 0.1G
+
+# for the moment the pool setup is solved primitively until I have
+# a better grasp of the architectural needs
+dcache_pool_setup: |
+  # since we do not have much space on the test installation
+  set gap 0.1G
+  csm set checksumtype ADLER32
+  csm set policy -scrub=off
+  csm set policy -onread=off -onwrite=on -onflush=off -onrestore=off -enforcecrc=on -getcrcfromhsm=off
+  #
+  # Flushing Thread setup
+  #
+  flush set max active 1000
+  flush set interval 60
+  flush set retry delay 60
+  #
+  # Queues
+  #
+  mover queue create wan -order=LIFO
+  mover queue create xrdlan -order=LIFO
+  mover queue create xrdwan -order=LIFO
+  mover queue create nfs4 -order=LIFO
+  
+  mover set max active -queue=wan 10
+  mover set max active -queue=xrdlan 200
+  mover set max active -queue=xrdwan 10
+  mover set max active -queue=nfs4 500
+      

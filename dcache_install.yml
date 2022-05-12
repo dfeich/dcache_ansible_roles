@@ -1,0 +1,112 @@
+# playbook to install a full dcache distributed system
+---
+- hosts: all
+  tags:
+    - vardebug
+    # tag defininiton for running this never except if tag is explicitely given
+    - never
+  name: Debug Task for showing all variables
+  tasks:
+    - name: Show all variables
+      debug:
+        # verbosity: 3
+        var: hostvars[inventory_hostname]
+
+        
+- hosts: testdcache
+  tags: testsetup
+  name: Tasks only done for the test dcache deployment
+  roles:
+    # this role entry may be unnecessary, because all dcache_nodes
+    # get the std security infrastr. But the extra tasks matter
+    - wlcg_security_infra
+  tasks:
+    - name: copy our SimpleCA RPM to all dcache nodes
+      copy:
+        src: '{{ files_path_prefix }}{{ test_ca_rpm }}'
+        dest: '/root/{{ test_ca_rpm }}'
+
+    - name: install our simpleCA RPM
+      yum:
+        name: '/root/{{ test_ca_rpm }}'
+        state: present
+
+    - name: create symlink to our CA cert for older openssl (<v1) hash
+      file:
+        dest: '/etc/grid-security/certificates/{{ test_ca_oldhash }}.0'
+        src: '{{ test_ca_newhash }}.0'
+        state: link
+
+- hosts: dcache_db
+  name: Install dcache admin and db head node
+  tags: db
+  # any_errors_fatal: true
+
+  pre_tasks:
+    - name: fix requiretty for root so that become with sudo succeeds
+      lineinfile:
+        path: /etc/sudoers
+        insertafter: 'Defaults *requiretty'
+        # NOTE: Fully quoted because of the ': '. See the Gotchas in the YAML docs.
+        line: 'Defaults:root     !requiretty'
+        state: present
+        validate: /usr/sbin/visudo -cf %s
+
+  roles:
+    - dcache_node
+    - dcache_postgresql
+
+- hosts: dcache_db
+  name: generate dcache namespace initial directory structure
+  tags: dirstruct
+  tasks:
+    - name: create directory structure and file system access permissions
+      file:
+        state: directory
+        path: '{{ item[0] }}'
+        owner: '{{ item[1] }}'
+        group: '{{ item[2] }}'
+        mode: '{{ item[3] }}'
+      loop: '{{ dcache_dirstruct | default([]) }}'
+
+
+- hosts: dcache_services
+  name: install dcache service nodes
+  tags: service
+  roles:
+    - dcache_node
+  # post_tasks:
+  #   - name: Start dcache SysV services 
+  #     tags: start
+  #     shell: "/usr/bin/dcache start"
+  #     when: not dcache_use_systemd
+  #   - name: Start dcache systemd services
+  #     tags: start
+  #     systemd:
+  #       name: dcache.target
+  #       daemon-reload: yes
+  #       enabled: no
+  #       state: started
+  #     when: dcache_use_systemd
+
+
+# TODO: extend to all pools
+- hosts: dcache_pools
+  name: install pool nodes
+  roles:
+    - dcache_node
+    # TODO: seems that wlcg_security_infra is needed for pools in 5.2.35
+    - {role: wlcg_security_infra, tags: wlcg_sec }
+  # post_tasks:
+  #   - name: Start dcache SysV services 
+  #     tags: start
+  #     shell: "/usr/bin/dcache start"
+  #     when: not dcache_use_systemd
+  #   - name: Start dcache systemd services
+  #     tags: start
+  #     systemd:
+  #       name: dcache.target
+  #       daemon-reload: yes
+  #       enabled: no
+  #       state: started
+  #     when: dcache_use_systemd

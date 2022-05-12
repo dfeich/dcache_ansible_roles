@@ -1,0 +1,28 @@
+---
+
+- name: get number of running dcache Domains
+  shell:
+    cmd: dcache status | sed -n '/[^ ]*  *running/p'
+  check_mode: no
+  register: cmd_dcache_running
+  changed_when: false
+
+- name: Show running cells
+  debug:
+    msg: "{{ cmd_dcache_running.stdout.split('\n') }}"
+  when: '"running" in cmd_dcache_running.stdout'
+
+- name: Shut down dcache Domains
+  shell: dcache stop
+  when: '"running" in cmd_dcache_running.stdout'
+
+- name: get number of still running dcache domains
+  shell:
+    cmd: dcache status | sed -n '/[^ ]*  *running/p'
+  check_mode: no
+  register: cmd_dcache_running_still
+  changed_when: false
+
+- name: assert that no dcache domain is still running
+  assert:
+    that: '"running" not in cmd_dcache_running_still.stdout'

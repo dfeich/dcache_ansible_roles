@@ -1,0 +1,70 @@
+---
+#
+dcache_layout:
+  - domain: admin-${host.name}Domain
+  - domain: admin-${host.name}Domain/admin
+    attr:
+      - admin.paths.history: /var/log/dcache/adminshell_history
+  - domain: gplazma-${host.name}Domain
+  - domain: gplazma-${host.name}Domain/gplazma
+    attr:
+      #  TODO: admin gid should not get hardcoded like this
+      - gplazma.roles.admin-gid: 989
+  - domain: httpd-${host.name}Domain
+    # httpd domain now only contains httpd & billing
+    # httpd.enable.authn=false
+    # httpd.enable.plots.billing=true
+  - domain: httpd-${host.name}Domain/billing
+    attr:
+      # notice this peculiarity: false hast to be quoted or it ends up as "False"
+      - billing.enable.db: "false"
+  - domain: httpd-${host.name}Domain/httpd
+  - domain: namespace-${host.name}Domain
+    attr:
+      - dcache.broker.scheme: core
+  - domain: namespace-${host.name}Domain/cleaner
+  - domain: namespace-${host.name}Domain/pnfsmanager
+    attr:
+      - pnfsmanager.enable.full-path-permission-check: "true"
+      - pnfsmanager.enable.inherit-file-ownership: "false"
+      - pnfsmanager.enable.acl: "true"
+  - domain: nfs-${host.name}Domain
+  - domain: nfs-${host.name}Domain/nfs
+    attr:
+      - nfs.version: 4.1
+      - nfs.mover.queue: nfs4
+      - nfs.enable.space-reservation: "true"
+  - domain: xrootd-${host.name}Domain
+  - domain: xrootd-${host.name}Domain/xrootd
+    attr:
+      # - xrootd.root: /data/cms
+      # - xrootd.authz.read-paths: /data
+      - xrootd.authz.write-paths: /data/cms:/data/tests
+      - xrootd.mover.queue: xrdlan
+      - xrootd.mover.timeout: 28800000
+      - xrootd.plugins: gplazma:gsi,authz:none
+      - xrootd.service.pool.timeout: 28800000
+  - domain: frontend-${host.name}Domain
+  - domain: frontend-${host.name}Domain/frontend
+    attr:      
+      - 'frontend.static!dcache-view.org-name': PSI
+      # explicit endpoint needed in order to get https instead of http 
+      - 'frontend.static!dcache-view.endpoints.webdav': 'https://{{ inventory_hostname }}:2880/'
+  - domain: webdav-${host.name}Domain
+  - domain: webdav-${host.name}Domain/webdav
+    attr:
+      - webdav.authn.protocol: https
+      - webdav.redirect.on-read: 'false'
+      - dcache.authn.capath.refresh.unit: 'MINUTES'
+      - dcache.authn.capath.refresh: 60
+  - domain: alarms-${host.name}Domain
+  - domain: alarms-${host.name}Domain/alarms
+    attr:
+      - alarms.db.type: rdbms
+      - alarms.enable.email: 'true'
+      - alarms.email.smtp-host: smtp.somedomain.ch
+      - alarms.email.to: dcache-alerts@somedomain.ch
+      - alarms.email.subject: 'dCache Test-System Alarm'
+
+dcache_hostcert: '{{ inventory_hostname }}-cert.pem'
+dcache_hostkey: '{{ inventory_hostname }}-key.pem'
